@@ -1,0 +1,35 @@
+{
+  "_readme": "Beginner Mode definitions. Keys are matched case-insensitively against the rendered Principles text as whole-word/phrase matches; they do not modify Principles.md itself. Add or edit entries freely — no code changes required. Longer phrases are matched before shorter ones they contain (e.g. 'peer-to-peer electronic cash' before 'cash').",
+
+  "peer-to-peer electronic cash": "Bitcoin's original design goal, as described in Satoshi Nakamoto's white paper: money that can be sent directly between people without a bank or payment processor in the middle.",
+
+  "trusted intermediaries": "Banks, payment processors, or other third parties that must be trusted to honestly move or hold money on your behalf. Bitcoin is designed to make this trust unnecessary.",
+
+  "issuance schedule": "The predetermined, publicly known rate at which new bitcoin are created and released over time, ending at a fixed total supply of 21 million.",
+
+  "monetary debasement": "Reducing the value of a currency, typically by increasing its supply faster than demand for it grows — the opposite of what a fixed, verifiable supply is designed to prevent.",
+
+  "trusted custodian": "A person or institution that holds money or assets on someone else's behalf. Self-custody in Bitcoin means holding your own keys instead of relying on a custodian.",
+
+  "peer-to-peer": "Direct interaction between participants without a central intermediary coordinating or approving the exchange.",
+
+  "decentralization": "The spread of control, verification, and decision-making across many independent participants rather than a single authority, so no one party can unilaterally change the rules or block participation.",
+
+  "security budget": "The total value miners earn from block rewards and transaction fees, which pays for the computing power that secures the network against attack.",
+
+  "ossification": "The process by which a protocol's core rules become progressively harder to change as it matures, favoring stability and predictability over continued modification.",
+
+  "node": "Software that independently downloads and checks Bitcoin transactions and blocks against the network's rules, without needing to trust anyone else's word for what is valid.",
+
+  "miner": "A network participant who uses computing power to propose new blocks of transactions and is rewarded with newly issued bitcoin and fees, in competition with other miners.",
+
+  "sovereignty": "The ability to hold, control, and transact with your own money without requiring anyone else's permission or cooperation.",
+
+  "entropy": "Genuine randomness used to generate a private key. Weak or predictable entropy can make a key guessable, which is why independently generated entropy matters for security.",
+
+  "keys": "The cryptographic private keys that prove ownership and authorize spending of bitcoin. Whoever holds the keys controls the coins — hence 'not your keys, not your coins.'",
+
+  "verification": "Independently checking that transactions and blocks follow the network's rules, rather than trusting someone else's claim that they do.",
+
+  "block space": "The limited capacity within each Bitcoin block available for transaction data, treated as a scarce resource reserved for the network's monetary function."
+}

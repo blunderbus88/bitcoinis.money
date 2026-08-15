@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { listVersions } from '../../lib/principles';
+
+const versions = listVersions(); // newest first
+const current = versions[0];
+---
+
+<BaseLayout
+  title="Principles — Version Archive"
+  description="Every published version of Our Bitcoin Principles, preserved with its exact hash and publication date."
+  current="principles"
+>
+  <div class="reading-column">
+    <h1>Version Archive</h1>
+    <p>
+      Every version of the Principles that has ever been published is preserved here exactly as it read at the
+      time, with its BLAKE2b hash. Signatures are always tied to one specific version — see the
+      <a href="/signatures">signature ledger</a>.
+    </p>
+
+    {versions.length === 0 && <p>No version has been published yet.</p>}
+
+    <ul class="version-list">
+      {
+        versions.map((v) => (
+          <li>
+            <span>
+              <a href={`/principles/${v.version}`}>Principles v{v.version}</a>
+              {current && v.version === current.version && <span class="version-badge-current"> · Current</span>}
+            </span>
+            <span class="ledger-meta">
+              {new Date(v.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              {' · '}
+              <code>{v.hash.slice(0, 16)}…</code>
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>

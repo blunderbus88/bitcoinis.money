@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ShareBar from '../components/ShareBar.astro';
+import { getWhitePaperHtml } from '../lib/whitepaper';
+
+const html = getWhitePaperHtml();
+const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
+const canonicalUrl = new URL('/whitepaper', siteUrl).toString();
+const shareText =
+  'The original Bitcoin white paper — how the system actually works, in Satoshi Nakamoto’s own words.';
+---
+
+<BaseLayout
+  title="White Paper"
+  description="Bitcoin: A Peer-to-Peer Electronic Cash System — the original white paper by Satoshi Nakamoto, hosted in full."
+  current="whitepaper"
+>
+  <div class="doc-relationship page-shell">
+    <p>
+      <strong>White Paper</strong> — how Bitcoin works. See also the <a href="/principles">Principles</a> — what we
+      believe is worth preserving.
+    </p>
+  </div>
+
+  <ShareBar canonicalUrl={canonicalUrl} markdownUrl="/whitepaper.md" shareText={shareText} />
+
+  <article class="reading-column whitepaper-body" set:html={html} />
+</BaseLayout>
+
+<style>
+  .whitepaper-body {
+    max-width: 80ch;
+  }
+
+  .doc-relationship {
+    max-width: var(--measure);
+    margin: 2rem auto 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .doc-relationship a {
+    color: var(--color-text-muted);
+    text-decoration-color: var(--color-border-strong);
+  }
+</style>

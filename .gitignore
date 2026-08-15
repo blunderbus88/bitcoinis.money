@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.astro/
+
+# environment
+.env
+.env.local
+
+# database (runtime data, not source)
+database/*.db
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+
+# editor / os
+.DS_Store
+*.swp

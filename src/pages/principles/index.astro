@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PrinciplesDocument from '../../components/PrinciplesDocument.astro';
+import { getCurrentPrinciples, listVersions } from '../../lib/principles';
+
+const doc = getCurrentPrinciples();
+const versions = listVersions();
+const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
+const sourceUrl = 'https://github.com/blunderbus88/Bitcoin/blob/main/principles.md';
+---
+
+<BaseLayout
+  title="Principles"
+  description="Our Bitcoin Principles — a voluntary, version-pinned statement of what Bitcoin is and what is worth preserving."
+  current="principles"
+>
+  <PrinciplesDocument
+    doc={doc}
+    isCurrent={true}
+    sourceUrl={sourceUrl}
+    markdownUrl="/principles.md"
+    canonicalUrl={new URL('/principles', siteUrl).toString()}
+  />
+
+  {
+    versions.length > 1 && (
+      <div class="page-shell version-links">
+        <a href="/principles/versions">View all published versions ({versions.length}) →</a>
+      </div>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .version-links {
+    max-width: var(--measure);
+    margin: 1.5rem auto 3rem;
+    font-size: 0.9rem;
+  }
+</style>

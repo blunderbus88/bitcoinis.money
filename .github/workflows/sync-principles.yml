@@ -1,0 +1,56 @@
+name: Sync Principles.md
+
+# Principles.md is authored upstream at blunderbus88/Bitcoin (principles.md on
+# main). This repo's copy is what src/lib/principles.ts reads live from disk
+# on every request, so keeping it in sync here is enough to keep the site
+# current — no rebuild or redeploy step needed for content changes.
+#
+# This only updates the *live* text. It does NOT publish a new hash-pinned
+# version (that stays a deliberate, manual `npm run release-principles`
+# step — see scripts/release-principles.mjs). If upstream changes without a
+# release, the site will render the new text under the still-current
+# version's metadata until an operator runs the release script.
+
+on:
+  schedule:
+    - cron: '17 * * * *' # hourly, offset from the top of the hour
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch canonical Principles.md
+        run: |
+          curl -fsSL \
+            "https://raw.githubusercontent.com/blunderbus88/Bitcoin/main/principles.md" \
+            -o /tmp/source-principles.md
+
+      - name: Normalize and compare
+        id: diff
+        run: |
+          # Strip trailing whitespace and collapse trailing blank lines so
+          # formatting-only noise from the source repo doesn't trigger a commit.
+          sed -e 's/[ \t]*$//' /tmp/source-principles.md > /tmp/trimmed.md
+          printf '%s\n' "$(cat /tmp/trimmed.md)" > /tmp/normalized.md
+
+          if diff -q /tmp/normalized.md Principles.md > /dev/null; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            cp /tmp/normalized.md Principles.md
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Principles.md
+          git commit -m "sync: update Principles.md from blunderbus88/Bitcoin@main"
+          git push

@@ -1,0 +1,58 @@
+---
+interface Props {
+  canonicalUrl: string;
+  markdownUrl: string;
+  shareText: string;
+}
+
+const { canonicalUrl, markdownUrl, shareText } = Astro.props;
+
+const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(
+  canonicalUrl
+)}`;
+---
+
+<div class="share-bar">
+  <a href={tweetUrl} rel="noopener" target="_blank">Share on X</a>
+  <button type="button" data-action="copy-link" data-url={canonicalUrl}>Copy Link</button>
+  <button type="button" data-action="copy-markdown" data-markdown-url={markdownUrl}>Copy Markdown</button>
+  <button type="button" data-action="print">Print</button>
+</div>
+
+<script>
+  document.querySelectorAll('[data-action="copy-link"]').forEach((el) => {
+    el.addEventListener('click', async () => {
+      const url = el.getAttribute('data-url');
+      if (!url || !navigator.clipboard) return;
+      await navigator.clipboard.writeText(url);
+      flash(el, 'Copied');
+    });
+  });
+
+  document.querySelectorAll('[data-action="copy-markdown"]').forEach((el) => {
+    el.addEventListener('click', async () => {
+      const src = el.getAttribute('data-markdown-url');
+      if (!src || !navigator.clipboard) return;
+      try {
+        const res = await fetch(src);
+        const text = await res.text();
+        await navigator.clipboard.writeText(text);
+        flash(el, 'Copied full text');
+      } catch {
+        flash(el, 'Copy failed');
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-action="print"]').forEach((el) => {
+    el.addEventListener('click', () => window.print());
+  });
+
+  function flash(el: Element, message: string) {
+    const original = el.textContent;
+    el.textContent = message;
+    setTimeout(() => {
+      el.textContent = original;
+    }, 1600);
+  }
+</script>

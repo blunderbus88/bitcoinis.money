@@ -1,0 +1,27 @@
+{
+  "name": "bitcoinis.money",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "release-principles": "node scripts/release-principles.mjs",
+    "db:init": "node scripts/init-db.mjs"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@astrojs/node": "^11.1.2",
+    "astro": "^7.2.2",
+    "better-sqlite3": "^11.3.0",
+    "markdown-it": "^14.1.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/markdown-it": "^14.1.2",
+    "typescript": "^5.6.3"
+  }
+}

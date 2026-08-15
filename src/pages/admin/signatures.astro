@@ -1,0 +1,75 @@
+---
+// Protected by src/middleware.ts (HTTP Basic Auth) for any /admin/* path.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { listPendingSignatures, listAllSignaturesForAdmin } from '../../lib/db';
+
+const pending = listPendingSignatures();
+const recent = listAllSignaturesForAdmin().slice(0, 40);
+---
+
+<BaseLayout title="Admin — Signatures" description="Signature moderation queue.">
+  <div class="reading-column">
+    <h1>Signature moderation</h1>
+
+    <h2>Pending ({pending.length})</h2>
+    {pending.length === 0 && <p>Nothing waiting for review.</p>}
+    <ul class="ledger-list">
+      {
+        pending.map((sig) => (
+          <li class="ledger-item">
+            <div>
+              <div class="ledger-name">
+                {sig.name} <span class="ledger-type">{sig.participant_type}</span>
+              </div>
+              <div class="ledger-meta">
+                v{sig.principles_version} · {sig.created_at}
+                {sig.website && ` · ${sig.website}`}
+                {sig.github && ` · ${sig.github}`}
+                {sig.x_profile && ` · ${sig.x_profile}`}
+                {sig.nostr && ` · ${sig.nostr}`}
+              </div>
+              {sig.comment && <div class="ledger-comment">{sig.comment}</div>}
+            </div>
+            <div class="admin-actions">
+              <form method="POST" action="/api/admin/moderate">
+                <input type="hidden" name="id" value={sig.id} />
+                <input type="hidden" name="status" value="approved" />
+                <button type="submit" class="btn btn-primary">Approve</button>
+              </form>
+              <form method="POST" action="/api/admin/moderate">
+                <input type="hidden" name="id" value={sig.id} />
+                <input type="hidden" name="status" value="rejected" />
+                <button type="submit" class="btn btn-secondary">Reject</button>
+              </form>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2>Recent (all statuses)</h2>
+    <ul class="ledger-list">
+      {
+        recent.map((sig) => (
+          <li class="ledger-item">
+            <div>
+              <div class="ledger-name">{sig.name}</div>
+              <div class="ledger-meta">
+                {sig.status} · v{sig.principles_version} · {sig.created_at}
+              </div>
+            </div>
+            <span class="ledger-type">{sig.participant_type}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .admin-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+</style>

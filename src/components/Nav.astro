@@ -1,0 +1,27 @@
+---
+import BitcoinMark from './BitcoinMark.astro';
+interface Props {
+  current?: 'principles' | 'whitepaper' | 'sign';
+}
+const { current } = Astro.props;
+---
+
+<header class="site-header">
+  <nav class="site-nav" aria-label="Primary">
+    <a class="brand" href="/principles">
+      <BitcoinMark class="brand-mark" />
+      <span>bitcoinis.money</span>
+    </a>
+    <ul class="nav-links">
+      <li>
+        <a href="/principles" aria-current={current === 'principles' ? 'page' : undefined}>Principles</a>
+      </li>
+      <li>
+        <a href="/whitepaper" aria-current={current === 'whitepaper' ? 'page' : undefined}>White Paper</a>
+      </li>
+      <li>
+        <a class="nav-cta" href="/sign" aria-current={current === 'sign' ? 'page' : undefined}>Sign</a>
+      </li>
+    </ul>
+  </nav>
+</header>

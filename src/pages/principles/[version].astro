@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PrinciplesDocument from '../../components/PrinciplesDocument.astro';
+import { getPrinciplesVersion, isCurrentVersion } from '../../lib/principles';
+import { validateVersion } from '../../lib/validation';
+
+const versionParam = validateVersion(Astro.params.version);
+if (!versionParam) {
+  return new Response('Not found', { status: 404 });
+}
+
+const doc = getPrinciplesVersion(versionParam);
+if (!doc) {
+  return new Response('Not found', { status: 404 });
+}
+
+const current = isCurrentVersion(versionParam);
+const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
+const sourceUrl = `https://github.com/blunderbus88/bitcoinis.money/blob/main/content/principles-archive/v${doc.version}.md`;
+---
+
+<BaseLayout
+  title={`Principles v${doc.version}`}
+  description={`Our Bitcoin Principles, version ${doc.version} — preserved exactly as published, hash-pinned for verification.`}
+  current="principles"
+>
+  <PrinciplesDocument
+    doc={doc}
+    isCurrent={current}
+    sourceUrl={sourceUrl}
+    markdownUrl={`/principles/${doc.version}.md`}
+    canonicalUrl={new URL(`/principles/${doc.version}`, siteUrl).toString()}
+  />
+</BaseLayout>

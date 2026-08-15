@@ -1,0 +1,746 @@
+/* ---------------------------------------------------------------------
+   bitcoinis.money — design tokens and base styles.
+   Visual language: bitcoin.org-inspired (orange, white/light gray,
+   restrained, archival). No gradients, no third-party fonts, minimal JS.
+   --------------------------------------------------------------------- */
+
+:root {
+  --btc-orange: #f7931a;
+  --btc-orange-dark: #ffb454;
+  --btc-orange-tint: rgba(247, 147, 26, 0.12);
+
+  --color-bg: #14171c;
+  --color-bg-subtle: #1b1f26;
+  --color-bg-inset: #21262e;
+  --color-text: #e8eaed;
+  --color-text-muted: #9aa4b2;
+  --color-text-faint: #6b7480;
+  --color-border: #2a2f38;
+  --color-border-strong: #3d434e;
+  --color-focus: #4dabf7;
+  --color-danger: #ff6b6b;
+  --color-success: #4ade80;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --measure: 70ch;
+  --measure-narrow: 60ch;
+  --line-height-body: 1.7;
+  --radius: 6px;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: var(--line-height-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--btc-orange-dark);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--btc-orange);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.term:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------------------
+   Layout shell
+   --------------------------------------------------------------------- */
+
+.site-header {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.site-nav {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: var(--color-text);
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.nav-links a:hover,
+.nav-links a[aria-current='page'] {
+  color: var(--btc-orange-dark);
+}
+
+.nav-cta {
+  background: var(--btc-orange);
+  color: #ffffff !important;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 600 !important;
+}
+
+.nav-cta:hover {
+  background: var(--btc-orange-dark);
+  color: #ffffff !important;
+}
+
+main {
+  min-height: 60vh;
+}
+
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding: 2.5rem 1.5rem 3rem;
+  margin-top: 4rem;
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: var(--color-text-muted);
+}
+
+/* ---------------------------------------------------------------------
+   Reading column
+   --------------------------------------------------------------------- */
+
+.page-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.reading-column {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 3rem 1.25rem 4rem;
+}
+
+.reading-column h1 {
+  font-size: 2rem;
+}
+
+.reading-column h2 {
+  font-size: 1.4rem;
+  margin-top: 2.75rem;
+}
+
+.reading-column p,
+.reading-column ul,
+.reading-column ol {
+  margin: 1.15em 0;
+}
+
+.reading-column li {
+  margin: 0.4em 0;
+}
+
+/* ---------------------------------------------------------------------
+   Hero / intro blocks
+   --------------------------------------------------------------------- */
+
+.hero {
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hero-inner {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 3.5rem 1.25rem 2.5rem;
+}
+
+.hero-eyebrow {
+  color: var(--btc-orange-dark);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.75rem;
+}
+
+.hero h1 {
+  margin: 0 0 0.75rem;
+  font-size: 2.25rem;
+}
+
+.hero p.lede {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  max-width: var(--measure-narrow);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.65rem 1.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--btc-orange);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--btc-orange-dark);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-text);
+  color: var(--color-text);
+}
+
+.btn-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+/* ---------------------------------------------------------------------
+   Document metadata bar (Principles / White Paper)
+   --------------------------------------------------------------------- */
+
+.doc-meta {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 0;
+}
+
+.doc-meta-card {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-size: 0.9rem;
+}
+
+.doc-meta-facts {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.35rem 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.doc-meta-facts dt {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.doc-meta-facts dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.doc-meta-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-end;
+}
+
+.doc-meta-actions .link-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+}
+
+/* ---------------------------------------------------------------------
+   Beginner Mode toggle (checkbox-hack; works without JS)
+   --------------------------------------------------------------------- */
+
+.beginner-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.beginner-toggle input[type='checkbox'] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.switch-track {
+  width: 34px;
+  height: 20px;
+  background: var(--color-border-strong);
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Beginner Mode is a single checkbox that can live anywhere in the page
+   (its visible switch UI sits in the doc-meta bar via a <label for>); every
+   state-dependent rule below targets it with :has() rather than a sibling
+   combinator, so it isn't constrained to a particular DOM position. */
+
+body:has(#beginner-toggle:checked) .switch-track {
+  background: var(--btc-orange);
+}
+
+body:has(#beginner-toggle:checked) .switch-track .switch-thumb {
+  transform: translateX(14px);
+}
+
+#beginner-toggle:focus-visible + .switch-track {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Terms: dotted underline + tooltip only appear when Beginner Mode is on. */
+.term {
+  cursor: default;
+}
+
+body:has(#beginner-toggle:checked) .term {
+  border-bottom: 1px dotted var(--btc-orange-dark);
+  cursor: help;
+  position: relative;
+}
+
+body:has(#beginner-toggle:checked) .term:hover::after,
+body:has(#beginner-toggle:checked) .term:focus::after {
+  content: attr(data-definition);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: max-content;
+  max-width: 300px;
+  background: var(--color-bg-inset);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  font-weight: 400;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius);
+  z-index: 20;
+  white-space: normal;
+}
+
+/* ---------------------------------------------------------------------
+   Terminology note
+   --------------------------------------------------------------------- */
+
+.terminology-note {
+  max-width: var(--measure);
+  margin: 1rem auto 0;
+  padding: 0 1.25rem;
+}
+
+.terminology-note details {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-subtle);
+}
+
+.terminology-note summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.terminology-note p {
+  margin: 0.6rem 0 0;
+}
+
+/* ---------------------------------------------------------------------
+   Share bar
+   --------------------------------------------------------------------- */
+
+.share-bar {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 1rem 1.25rem 0;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.share-bar button,
+.share-bar a {
+  font-size: 0.85rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg);
+  color: var(--color-text);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.share-bar button:hover,
+.share-bar a:hover {
+  border-color: var(--btc-orange);
+  color: var(--btc-orange-dark);
+}
+
+/* ---------------------------------------------------------------------
+   Signature form + ledger
+   --------------------------------------------------------------------- */
+
+.form-grid {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.form-field label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.form-field .hint {
+  color: var(--color-text-faint);
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-left: 0.35rem;
+}
+
+.form-field input[type='text'],
+.form-field input[type='url'],
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.form-note {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.form-error {
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  color: var(--color-danger);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  font-size: 0.9rem;
+}
+
+.form-success {
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  color: var(--color-success);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  font-size: 0.9rem;
+}
+
+.ledger-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ledger-count {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.ledger-filter {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.ledger-filter a {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-strong);
+  text-decoration: none;
+  color: var(--color-text-muted);
+}
+
+.ledger-filter a[aria-current='true'] {
+  background: var(--btc-orange);
+  border-color: var(--btc-orange);
+  color: #ffffff;
+}
+
+.ledger-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.ledger-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ledger-name {
+  font-weight: 600;
+}
+
+.ledger-meta {
+  color: var(--color-text-faint);
+  font-size: 0.85rem;
+}
+
+.ledger-type {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  white-space: nowrap;
+  height: fit-content;
+}
+
+.ledger-comment {
+  flex-basis: 100%;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+/* ---------------------------------------------------------------------
+   Version archive
+   --------------------------------------------------------------------- */
+
+.version-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.version-list li {
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.version-badge-current {
+  color: var(--btc-orange-dark);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ---------------------------------------------------------------------
+   Utility
+   --------------------------------------------------------------------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .share-bar,
+  .terminology-note,
+  .doc-meta-actions,
+  .beginner-toggle {
+    display: none !important;
+  }
+
+  .reading-column {
+    max-width: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-nav {
+    padding: 0.85rem 1.25rem;
+  }
+
+  .nav-links {
+    gap: 1.1rem;
+  }
+
+  .hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .doc-meta-card {
+    flex-direction: column;
+  }
+
+  .doc-meta-actions {
+    align-items: flex-start;
+  }
+}
