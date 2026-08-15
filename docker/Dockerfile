@@ -15,7 +15,6 @@ ENV PORT=4321
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/Principles.md ./Principles.md
 COPY --from=build /app/WhitePaper.md ./WhitePaper.md
 COPY --from=build /app/content ./content
 COPY --from=build /app/database/schema.sql ./database/schema.sql

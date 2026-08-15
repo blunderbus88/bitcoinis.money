@@ -2,7 +2,10 @@
 //
 // Publishes the current contents of Principles.md as an official, hash-pinned
 // version. This is the ONLY supported way to change which version of the
-// Principles is "current" on the site.
+// Principles is "current" on the site. Principles.md itself is a gitignored
+// scratch/staging file (populated by sync-principles.yml, or hand-edited
+// locally) — it is never read by the running site; only the archive snapshot
+// this script writes is.
 //
 // Usage:
 //   npm run release-principles -- --version 1.0

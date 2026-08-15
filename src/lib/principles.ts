@@ -1,19 +1,20 @@
-// Loads Principles.md (the single canonical source) plus its version
-// metadata and Beginner Mode annotation dictionary, and renders them.
+// Loads the currently published Principles (and any archived version) plus
+// Beginner Mode annotations, and renders them.
 //
-// Principles.md and content/*.json are read directly from disk on each
-// request. There is no build-time snapshot and no separate HTML copy —
-// editing Principles.md and running `npm run release-principles` is the
-// only way the published content changes.
+// There is exactly one copy of "current" text: content/principles-archive/,
+// pointed to by content/principles-meta.json's `current` entry. The site
+// never reads a separate live-mirrored Principles.md at request time, so the
+// displayed text and its BLAKE2b hash can never drift apart — the only way
+// "current" changes is `npm run release-principles` (manual --version, or
+// --auto from the sync-principles.yml workflow), which archives a new
+// snapshot and updates principles-meta.json in the same step.
 
-import { createHash } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { renderMarkdown, renderMarkdownWithAnnotations, type AnnotationDictionary } from './markdown';
 import { PROJECT_ROOT } from './projectRoot';
 
 const ROOT = `${PROJECT_ROOT}/`;
 
-const PRINCIPLES_PATH = `${ROOT}Principles.md`;
 const META_PATH = `${ROOT}content/principles-meta.json`;
 const ANNOTATIONS_PATH = `${ROOT}content/annotations.json`;
 
@@ -38,10 +39,6 @@ export interface RenderedPrinciples {
   htmlBeginner: string;
 }
 
-function blake2b(text: string): string {
-  return createHash('blake2b512').update(text, 'utf-8').digest('hex');
-}
-
 function loadMeta(): PrinciplesMeta {
   if (!existsSync(META_PATH)) return { current: null, history: [] };
   return JSON.parse(readFileSync(META_PATH, 'utf-8'));
@@ -54,41 +51,7 @@ export function loadAnnotations(): AnnotationDictionary {
   return terms;
 }
 
-/**
- * The currently published Principles: always rendered live from the root
- * Principles.md, which is the canonical source of truth. If Principles.md
- * has been edited but not yet released, its live hash will differ from
- * meta.current.hash — callers that need the *published* guarantee should
- * treat meta.current as authoritative for version/hash/date display.
- */
-export function getCurrentPrinciples(): RenderedPrinciples {
-  const markdown = readFileSync(PRINCIPLES_PATH, 'utf-8');
-  const meta = loadMeta();
-  const annotations = loadAnnotations();
-
-  const liveHash = blake2b(markdown);
-  const published = meta.current;
-
-  return {
-    version: published?.version ?? 'unreleased',
-    hash: published?.hash ?? liveHash,
-    publishedAt: published?.publishedAt ?? '',
-    markdown,
-    html: renderMarkdown(markdown),
-    htmlBeginner: renderMarkdownWithAnnotations(markdown, annotations),
-  };
-}
-
-/**
- * A specific archived (or current) version by version string, e.g. "1.0".
- * Reads the frozen snapshot in content/principles-archive/, never the live
- * root file, so archived versions can never drift.
- */
-export function getPrinciplesVersion(version: string): RenderedPrinciples | null {
-  const meta = loadMeta();
-  const entry = [meta.current, ...meta.history].find((v) => v?.version === version);
-  if (!entry) return null;
-
+function renderVersion(entry: VersionMeta): RenderedPrinciples | null {
   const filePath = `${ROOT}${entry.file}`;
   if (!existsSync(filePath)) return null;
 
@@ -105,6 +68,25 @@ export function getPrinciplesVersion(version: string): RenderedPrinciples | null
   };
 }
 
+/**
+ * The currently published Principles, read from its frozen archive snapshot.
+ * Returns null if nothing has ever been published yet (a brand-new site
+ * before its first release).
+ */
+export function getCurrentPrinciples(): RenderedPrinciples | null {
+  const meta = loadMeta();
+  if (!meta.current) return null;
+  return renderVersion(meta.current);
+}
+
+/** A specific archived (or current) version by version string, e.g. "1.0". */
+export function getPrinciplesVersion(version: string): RenderedPrinciples | null {
+  const meta = loadMeta();
+  const entry = [meta.current, ...meta.history].find((v) => v?.version === version);
+  if (!entry) return null;
+  return renderVersion(entry);
+}
+
 export function listVersions(): VersionMeta[] {
   const meta = loadMeta();
   return [meta.current, ...meta.history].filter((v): v is VersionMeta => v !== null);
@@ -113,8 +95,4 @@ export function listVersions(): VersionMeta[] {
 export function isCurrentVersion(version: string): boolean {
   const meta = loadMeta();
   return meta.current?.version === version;
-}
-
-export function hasAnyReleasedVersion(): boolean {
-  return loadMeta().current !== null;
 }

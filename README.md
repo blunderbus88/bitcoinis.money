@@ -11,7 +11,7 @@ independently, and see who voluntarily endorsed that exact text.
 
 ## Purpose
 
-- Publish `Principles.md` as the single, canonical source of the Principles.
+- Publish the Principles as a hash-pinned, version-archived document.
 - Make the document approachable to nontechnical readers (Beginner Mode)
   without ever altering the canonical text.
 - Let people voluntarily sign a specific, hash-pinned version of the
@@ -22,18 +22,18 @@ independently, and see who voluntarily endorsed that exact text.
 ## Architecture
 
 Astro (server output) + SQLite + Markdown-as-content. No CMS, no build-time
-content baking for the Principles — `Principles.md` is read from disk on
-every request, so publishing a new version is a matter of editing a file and
-running a script, not redeploying application code.
+content baking — the site reads its archived Markdown snapshot from disk on
+every request, so publishing a new version is a matter of running a script,
+not redeploying application code.
 
 ```
 /
-├── Principles.md                  # canonical current Principles text
+├── Principles.md                  # gitignored staging file for release-principles.mjs (not read by the site)
 ├── WhitePaper.md                  # Bitcoin white paper (Markdown transcription)
 ├── content/
 │   ├── annotations.json           # Beginner Mode term dictionary
-│   ├── principles-meta.json       # version/hash/date records (generated)
-│   └── principles-archive/        # frozen snapshot of every published version
+│   ├── principles-meta.json       # version/hash/date records, points at the current archive file
+│   └── principles-archive/        # frozen snapshot of every published version — what the site actually reads
 ├── database/
 │   └── schema.sql                 # signatures table only — never Principles content
 ├── public/
@@ -48,13 +48,13 @@ running a script, not redeploying application code.
 └── docker/
 ```
 
-**Why this stack:** Astro renders Principles.md and WhitePaper.md live from
-disk with minimal JavaScript shipped to the client (Beginner Mode's toggle
-and tooltips work via a pure CSS `:has()` checkbox-hack — no JS required for
-that feature at all). SQLite is enough for a signature ledger; there is no
-reason to reach for a bigger database for a single low-write-volume table.
-Nothing here needs a CMS: the Git repository *is* the content-management
-system for the Principles.
+**Why this stack:** Astro renders the archived Principles snapshot and
+WhitePaper.md live from disk with minimal JavaScript shipped to the client
+(Beginner Mode's toggle and tooltips work via a pure CSS `:has()`
+checkbox-hack — no JS required for that feature at all). SQLite is enough
+for a signature ledger; there is no reason to reach for a bigger database
+for a single low-write-volume table. Nothing here needs a CMS: the Git
+repository *is* the content-management system for the Principles.
 
 ## Local development
 
@@ -64,9 +64,14 @@ Requires Node.js 22+.
 npm install
 cp .env.example .env        # fill in ADMIN_PASSWORD and IP_HASH_SALT at minimum
 npm run db:init              # creates database/signatures.db
-npm run release-principles -- --version 1.0   # first release, if not already published
 npm run dev
 ```
+
+If `content/principles-meta.json` has no `current` version yet (e.g. a fresh
+fork with no release history), create a `Principles.md` at the repo root
+first (hand-written, or copied from
+[blunderbus88/Bitcoin](https://github.com/blunderbus88/Bitcoin)), then run
+`npm run release-principles -- --version 1.0` to publish it.
 
 The dev server runs at `http://localhost:4321`.
 
@@ -83,12 +88,15 @@ injected by your host in production). See `.env.example` for the full list:
 | `IP_HASH_SALT` | Salts the hashed IP used only for rate-limiting |
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile (spam prevention). If unset, verification is **skipped with a warning** — fine for local dev, required in production |
 
-## How Principles.md is rendered
+## How the Principles are rendered
 
-`src/lib/principles.ts` reads `Principles.md` directly from disk on every
-request and renders it with `markdown-it` (`src/lib/markdown.ts`). There is
-no separate HTML copy anywhere — the Markdown file is the single source of
-truth, on every environment, at every point in time.
+`src/lib/principles.ts` reads the currently published snapshot —
+`content/principles-archive/vX.Y.md`, as pointed to by
+`content/principles-meta.json`'s `current` entry — directly from disk on
+every request and renders it with `markdown-it` (`src/lib/markdown.ts`).
+There is exactly one copy of "current" text in the whole system, so the
+Markdown shown, downloaded, and hash-pinned for signing can never drift
+apart from each other. There is no separate HTML copy anywhere.
 
 **Beginner Mode** never touches the source Markdown. `content/annotations.json`
 is a flat `{ "term": "definition" }` dictionary; a small `markdown-it` core
@@ -106,40 +114,42 @@ code changes needed.
 (`current`) and every prior version (`history`), each as
 `{ version, hash, publishedAt, file }`. `content/principles-archive/vX.Y.md`
 holds a frozen, byte-for-byte copy of the Markdown as it read at release
-time — this is what `/principles/vX.Y` serves, so an archived version can
-never drift even if `Principles.md` is edited afterward.
-
-`/principles` always renders the live `Principles.md`, but displays the
-version/date/hash from `meta.current` — i.e. the last *published* state.
+time — this is what `/principles`, `/principles.md`, and `/principles/vX.Y`
+all serve, so a published version can never drift once it exists.
 
 ### Publishing a new version
 
-This is the **only** supported way to change what's live:
+`npm run release-principles` (`scripts/release-principles.mjs`) is the
+**only** way to publish. It reads `Principles.md` (the gitignored staging
+file at the repo root — edit it by hand, or let the sync workflow below
+populate it from upstream), and:
 
-```bash
-# 1. Edit Principles.md
-# 2. Publish it:
-npm run release-principles -- --version 1.1
-```
-
-That command:
-
-1. Validates `Principles.md` (non-empty, has a top-level heading, no null
-   bytes, sane size).
-2. Computes its SHA-256 hash.
+1. Validates it (non-empty, has a top-level heading, no null bytes, sane
+   size).
+2. Computes its BLAKE2b hash.
 3. Refuses to run if the hash hasn't changed since the last release (nothing
    to publish).
-4. Refuses to reuse a version number that's already been published — archive
-   files are immutable once written.
-5. Freezes a copy into `content/principles-archive/vX.Y.md`.
-6. Updates `content/principles-meta.json`, moving the previous `current`
+4. Freezes a copy into `content/principles-archive/vX.Y.md`.
+5. Updates `content/principles-meta.json`, moving the previous `current`
    into `history`.
 
-Commit `Principles.md`, `content/principles-meta.json`, and the new archive
-file together — that commit *is* the release record.
+Two ways to invoke it:
 
-Nothing publishes automatically. There is no cron job, no CI step that runs
-this script — an operator runs it deliberately.
+- `npm run release-principles -- --version 1.1` — an operator names the
+  version explicitly. Refuses to reuse a version number that's already been
+  published (archive files are immutable once written). Use this for a
+  deliberate release, e.g. a major bump.
+- `npm run release-principles -- --auto` — derives the next version itself
+  by bumping the minor version (`1.0` -> `1.1`, or `1.0` if nothing has ever
+  been published). This is what `.github/workflows/sync-principles.yml`
+  runs every 10 minutes after fetching the upstream text from
+  `blunderbus88/Bitcoin@main` — since the script always no-ops on an
+  unchanged hash, a version only actually gets published (and a commit only
+  actually gets pushed) when the upstream text really changed.
+
+Commit `content/principles-meta.json` and the new archive file together —
+that commit *is* the release record. (`Principles.md` itself is never
+committed — it's disposable input, not output.)
 
 ## How signatures are moderated
 
@@ -191,19 +201,19 @@ docker compose up --build -d
 ```
 
 The signatures database lives in a named volume (`signatures-db`) so it
-survives container rebuilds/redeploys. `Principles.md`, `WhitePaper.md`,
-`content/`, and the white paper diagrams are baked into the image at build
-time — to publish a new Principles version, run
-`npm run release-principles` locally, commit the result, and rebuild/redeploy
-the image.
+survives container rebuilds/redeploys. `WhitePaper.md`, `content/` (which
+includes `principles-meta.json` and `principles-archive/`), and the white
+paper diagrams are baked into the image at build time — to publish a new
+Principles version, run `npm run release-principles`, commit the result
+(`content/principles-meta.json` + the new archive file), and
+rebuild/redeploy the image.
 
 Without Docker: `npm run build` produces a standalone Node server at
 `dist/server/entry.mjs` (via `@astrojs/node` in `standalone` mode, which
 also serves the static assets in `dist/client/`). Run it with `node
 dist/server/entry.mjs` from the project root — path resolution for
-`Principles.md`, `content/`, and the database assumes the process's working
-directory is the project root, matching every deployment method described
-here.
+`content/` and the database assumes the process's working directory is the
+project root, matching every deployment method described here.
 
 ## Terminology note
 

@@ -18,3 +18,8 @@ database/*.db-shm
 # editor / os
 .DS_Store
 *.swp
+
+# Principles.md is a scratch staging file for release-principles.mjs, not
+# the canonical source: the site reads content/principles-archive/ (via
+# content/principles-meta.json) instead. See src/lib/principles.ts.
+/Principles.md

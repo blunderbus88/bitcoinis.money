@@ -14,21 +14,30 @@ const sourceUrl = 'https://github.com/blunderbus88/Bitcoin/blob/main/principles.
   description="Our Bitcoin Principles — a voluntary, version-pinned statement of what Bitcoin is and what is worth preserving."
   current="principles"
 >
-  <PrinciplesDocument
-    doc={doc}
-    isCurrent={true}
-    sourceUrl={sourceUrl}
-    markdownUrl="/principles.md"
-    canonicalUrl={new URL('/principles', siteUrl).toString()}
-  />
+  {doc === null && (
+    <div class="page-shell reading-column">
+      <h1>Principles</h1>
+      <p>No version of the Principles has been published yet.</p>
+    </div>
+  )}
 
-  {
-    versions.length > 1 && (
-      <div class="page-shell version-links">
-        <a href="/principles/versions">View all published versions ({versions.length}) →</a>
-      </div>
-    )
-  }
+  {doc !== null && (
+    <>
+      <PrinciplesDocument
+        doc={doc}
+        isCurrent={true}
+        sourceUrl={sourceUrl}
+        markdownUrl="/principles.md"
+        canonicalUrl={new URL('/principles', siteUrl).toString()}
+      />
+
+      {versions.length > 1 && (
+        <div class="page-shell version-links">
+          <a href="/principles/versions">View all published versions ({versions.length}) →</a>
+        </div>
+      )}
+    </>
+  )}
 </BaseLayout>
 
 <style>

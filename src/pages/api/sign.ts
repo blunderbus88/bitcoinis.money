@@ -56,7 +56,7 @@ export const POST: APIRoute = async ({ request, url }) => {
   // Principles were re-released between page load and submission, reject
   // rather than silently signing the wrong (or a stale) version.
   const current = getCurrentPrinciples();
-  if (submittedVersion !== current.version || submittedHash !== current.hash) {
+  if (!current || submittedVersion !== current.version || submittedHash !== current.hash) {
     return redirectTo(url, '/sign', { error: 'version' });
   }
 

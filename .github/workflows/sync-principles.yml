@@ -1,15 +1,16 @@
 name: Sync Principles.md
 
 # Principles.md is authored upstream at blunderbus88/Bitcoin (principles.md on
-# main). This repo's copy is what src/lib/principles.ts reads live from disk
-# on every request, so keeping it in sync here is enough to keep the site
-# current — no rebuild or redeploy step needed for content changes.
+# main). This workflow fetches it into a local, gitignored Principles.md —
+# scratch input for release-principles.mjs, never committed and never read by
+# the running site (src/lib/principles.ts reads content/principles-archive/
+# via content/principles-meta.json instead, so displayed text and hash can
+# never drift apart).
 #
-# Whenever the sync actually changes Principles.md, it also runs
-# `release-principles.mjs --auto`, which publishes the new text as the next
-# minor version (see scripts/release-principles.mjs) so the displayed hash
-# and version always match what's on the page. A no-op sync (upstream
-# unchanged) never touches versioning.
+# release-principles.mjs --auto is always invoked; it already refuses to
+# publish when the content's hash hasn't changed, so an idle sync tick
+# touches nothing and this workflow only commits when there's a real,
+# hash-pinned new version to record.
 
 on:
   schedule:
@@ -25,41 +26,36 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch canonical Principles.md
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch and normalize canonical Principles.md
         run: |
           curl -fsSL \
             "https://raw.githubusercontent.com/blunderbus88/Bitcoin/main/principles.md" \
             -o /tmp/source-principles.md
 
-      - name: Normalize and compare
-        id: diff
-        run: |
           # Strip trailing whitespace and collapse trailing blank lines so
-          # formatting-only noise from the source repo doesn't trigger a commit.
+          # formatting-only noise from the source repo doesn't trigger a release.
           sed -e 's/[ \t]*$//' /tmp/source-principles.md > /tmp/trimmed.md
-          printf '%s\n' "$(cat /tmp/trimmed.md)" > /tmp/normalized.md
+          printf '%s\n' "$(cat /tmp/trimmed.md)" > Principles.md
 
-          if diff -q /tmp/normalized.md Principles.md > /dev/null; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
+      - name: Auto-release if content changed
+        id: release
+        run: |
+          node scripts/release-principles.mjs --auto
+          if git status --porcelain content/principles-meta.json content/principles-archive/ | grep -q .; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
           else
-            cp /tmp/normalized.md Principles.md
-            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "published=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/setup-node@v4
-        if: steps.diff.outputs.changed == 'true'
-        with:
-          node-version: 20
-
-      - name: Auto-release the new version
-        if: steps.diff.outputs.changed == 'true'
-        run: node scripts/release-principles.mjs --auto
-
       - name: Commit and push
-        if: steps.diff.outputs.changed == 'true'
+        if: steps.release.outputs.published == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Principles.md content/principles-meta.json content/principles-archive/
-          git commit -m "sync: update Principles.md from blunderbus88/Bitcoin@main and auto-release"
+          git add content/principles-meta.json content/principles-archive/
+          git commit -m "release: auto-publish Principles.md update from blunderbus88/Bitcoin@main"
           git push

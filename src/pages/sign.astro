@@ -1,11 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCurrentPrinciples, hasAnyReleasedVersion } from '../lib/principles';
+import { getCurrentPrinciples } from '../lib/principles';
 import { PARTICIPANT_TYPES } from '../lib/validation';
 import { turnstileSiteKey } from '../lib/turnstile';
 
 const doc = getCurrentPrinciples();
-const released = hasAnyReleasedVersion();
 const siteKey = turnstileSiteKey();
 
 const errorCode = Astro.url.searchParams.get('error');
@@ -34,7 +33,7 @@ const ERROR_MESSAGES: Record<string, string> = {
       are reviewed before appearing publicly.
     </p>
 
-    {!released && (
+    {!doc && (
       <p class="form-error">No version of the Principles has been published yet, so signing isn't open.</p>
     )}
 
@@ -47,7 +46,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
     {errorCode && <p class="form-error">{ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.unknown}</p>}
 
-    {released && (
+    {doc && (
       <form method="POST" action="/api/sign" class="form-grid">
         <input type="hidden" name="principles_version" value={doc.version} />
         <input type="hidden" name="principles_hash" value={doc.hash} />
@@ -106,11 +105,13 @@ const ERROR_MESSAGES: Record<string, string> = {
       </form>
     )}
 
-    <p class="version-pin-note">
-      You are signing <strong>Principles v{doc.version}</strong> · BLAKE2b <code>{doc.hash.slice(0, 16)}…</code>. If a
-      newer version is published later, your signature stays tied to this exact text — it is never carried forward
-      automatically.
-    </p>
+    {doc && (
+      <p class="version-pin-note">
+        You are signing <strong>Principles v{doc.version}</strong> · BLAKE2b <code>{doc.hash.slice(0, 16)}…</code>. If
+        a newer version is published later, your signature stays tied to this exact text — it is never carried
+        forward automatically.
+      </p>
+    )}
   </div>
 
   {siteKey && <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>}
