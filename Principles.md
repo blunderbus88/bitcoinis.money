@@ -11,7 +11,7 @@ A system built not by the dictate of the chosen few, but on rules anyone can ver
 Behind it lies a simple, sacred proposition: Honest money changes how people live.
 
 When money cannot be debased, saving becomes meaningful. When saving becomes meaningful, the future matters. We choose to think beyond the next quarter, the next election, the next cycle—beyond our own lifetimes.
-We choose to build things meant to last. We choose to preserve rather than consume. We consider what we leave to our children, and what they will leave to theirs.
+We choose to build things meant to last. We choose to preserve rather than consume. We consider what we leave to our children, and what they will leave to theirs. 
 
 The decisions we make today will echo for centuries. Therefore, we hold these Principles.
 
