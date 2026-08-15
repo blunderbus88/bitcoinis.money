@@ -6,6 +6,7 @@
 //
 // Usage:
 //   npm run release-principles -- --version 1.0
+//   npm run release-principles -- --auto
 //
 // What it does:
 //   1. Validates Principles.md (basic sanity checks).
@@ -17,8 +18,15 @@
 //   6. Records the new version as "current" in content/principles-meta.json,
 //      moving the previous current version into history.
 //
-// This never runs automatically. It only runs when an operator explicitly
-// invokes it with an explicit --version.
+// --version requires an operator to name the version explicitly (used for
+// deliberate releases, e.g. major bumps).
+//
+// --auto derives the next version itself by bumping the minor version of the
+// last-published version (1.0 -> 1.1, defaulting to 1.0 if nothing has ever
+// been published). It's meant to be invoked by the sync-principles.yml
+// workflow, and only ever does anything when the hash actually changed —
+// this script always refuses to publish when the content hasn't changed
+// (step 3 above), so a version bump only happens on a real content change.
 
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -41,23 +49,37 @@ function parseArgs(argv) {
     if (argv[i] === '--version') {
       out.version = argv[i + 1];
       i++;
+    } else if (argv[i] === '--auto') {
+      out.auto = true;
     }
   }
   return out;
 }
 
+function nextAutoVersion(current) {
+  if (!current) return '1.0';
+  const [major, minor] = current.version.split('.');
+  return `${major}.${Number(minor) + 1}`;
+}
+
 const args = parseArgs(process.argv.slice(2));
 
-if (!args.version) {
+if (!args.version && !args.auto) {
   fail(
     'a version is required.\n\n' +
-      '  Usage: npm run release-principles -- --version 1.0\n\n' +
+      '  Usage: npm run release-principles -- --version 1.0\n' +
+      '         npm run release-principles -- --auto\n\n' +
       'This is deliberate: publishing a new version is an explicit operator\n' +
-      'action, not something that happens automatically.'
+      'action (or an explicit --auto invocation), not something that happens\n' +
+      'silently.'
   );
 }
 
-if (!/^\d+\.\d+(\.\d+)?$/.test(args.version)) {
+if (args.version && args.auto) {
+  fail('--version and --auto are mutually exclusive.');
+}
+
+if (args.version && !/^\d+\.\d+(\.\d+)?$/.test(args.version)) {
   fail(`version "${args.version}" doesn't look like a version number (expected e.g. "1.0" or "1.0.1").`);
 }
 
@@ -103,17 +125,19 @@ if (meta.current && meta.current.hash === hash) {
   process.exit(0);
 }
 
+const version = args.auto ? nextAutoVersion(meta.current) : args.version;
+
 // --- 4. Refuse to overwrite an existing release -----------------------------
 
-const archiveFile = resolve(archiveDir, `v${args.version}.md`);
+const archiveFile = resolve(archiveDir, `v${version}.md`);
 const alreadyPublished =
   existsSync(archiveFile) ||
-  meta.history.some((v) => v.version === args.version) ||
-  (meta.current && meta.current.version === args.version);
+  meta.history.some((v) => v.version === version) ||
+  (meta.current && meta.current.version === version);
 
 if (alreadyPublished) {
   fail(
-    `version "${args.version}" has already been published and its archive is immutable.\n` +
+    `version "${version}" has already been published and its archive is immutable.\n` +
       'Choose a new version number for this change (e.g. bump the minor version).'
   );
 }
@@ -131,19 +155,19 @@ if (meta.current) {
 }
 
 meta.current = {
-  version: args.version,
+  version,
   hash,
   publishedAt,
-  file: `content/principles-archive/v${args.version}.md`,
+  file: `content/principles-archive/v${version}.md`,
 };
 
 writeFileSync(metaPath, JSON.stringify(meta, null, 2) + '\n', 'utf-8');
 
 console.log(
-  `\nPublished Principles v${args.version}\n` +
+  `\nPublished Principles v${version}\n` +
     `  BLAKE2b:   ${hash}\n` +
     `  Date:      ${publishedAt}\n` +
-    `  Archived:  content/principles-archive/v${args.version}.md\n\n` +
+    `  Archived:  content/principles-archive/v${version}.md\n\n` +
     'Commit Principles.md, content/principles-meta.json, and the new archive\n' +
     'file together so the release is captured in version control.\n'
 );
