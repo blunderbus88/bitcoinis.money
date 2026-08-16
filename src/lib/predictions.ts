@@ -14,7 +14,7 @@ const PREDICTIONS_PATH = `${PROJECT_ROOT}/Predictions.md`;
 export type PredictionStatus = 'open' | 'partially-fulfilled' | 'fulfilled' | 'not-fulfilled';
 
 export const STATUS_LABELS: Record<PredictionStatus, string> = {
-  open: 'Open',
+  open: 'Pending',
   'partially-fulfilled': 'Partially Fulfilled',
   fulfilled: 'Fulfilled',
   'not-fulfilled': 'Not Fulfilled',

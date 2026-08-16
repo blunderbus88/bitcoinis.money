@@ -1,8 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getWhitePaperHtml } from '../lib/whitepaper';
+import ShareBar from '../components/ShareBar.astro';
+import { getWhitePaperHtml, getWhitePaperMarkdown } from '../lib/whitepaper';
+import { markdownToPlainText } from '../lib/markdown';
 
 const html = getWhitePaperHtml();
+const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
+const canonicalUrl = new URL('/whitepaper', siteUrl).toString();
+
+const shareTextBrief = `Bitcoin: A Peer-to-Peer Electronic Cash System — the original white paper by Satoshi Nakamoto.
+
+${canonicalUrl}`;
+
+const shareTextFull = markdownToPlainText(getWhitePaperMarkdown());
 ---
 
 <BaseLayout
@@ -12,10 +22,15 @@ const html = getWhitePaperHtml();
 >
   <div class="doc-relationship page-shell">
     <p>
-      <strong>White Paper</strong> — how Bitcoin works. See also the <a href="/principles">Principles</a> — what we
-      believe is worth preserving.
+      <strong>White Paper</strong> — how Bitcoin works.
     </p>
   </div>
+
+  <ShareBar
+    canonicalUrl={canonicalUrl}
+    shareTextFull={shareTextFull}
+    shareTextBrief={shareTextBrief}
+  />
 
   <article class="reading-column whitepaper-body" set:html={html} />
 </BaseLayout>

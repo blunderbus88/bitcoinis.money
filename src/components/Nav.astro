@@ -10,17 +10,17 @@ const { current } = Astro.props;
   <nav class="site-nav" aria-label="Primary">
     <a class="brand" href="/principles">
       <BitcoinMark class="brand-mark" />
-      <span>bitcoinIS.money</span>
+      <span>BitcoinIs.Money</span>
     </a>
     <ul class="nav-links">
-      <li>
-        <a href="/whitepaper" aria-current={current === 'whitepaper' ? 'page' : undefined}>White Paper</a>
-      </li>
       <li>
         <a href="/principles" aria-current={current === 'principles' ? 'page' : undefined}>Principles</a>
       </li>
       <li>
         <a href="/predictions" aria-current={current === 'predictions' ? 'page' : undefined}>Predictions</a>
+      </li>
+      <li>
+        <a href="/whitepaper" aria-current={current === 'whitepaper' ? 'page' : undefined}>White Paper</a>
       </li>
       <li>
         <a class="nav-cta" href="/endorse" aria-current={current === 'endorse' ? 'page' : undefined}>Endorse</a>

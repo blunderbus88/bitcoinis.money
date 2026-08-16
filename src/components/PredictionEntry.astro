@@ -38,7 +38,6 @@ const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText
     <span class="prediction-date">Published {dateLabel}</span>
     <span class="prediction-actions">
       <a href={tweetUrl} rel="noopener" target="_blank">Share on X</a>
-      <button type="button" data-copy-link={anchorUrl}>Copy Link</button>
     </span>
   </div>
 
@@ -52,48 +51,6 @@ const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText
   }
 </section>
 
-<script>
-  // Progressive enhancement only: the Share on X link works with plain
-  // HTML; this just wires up the Copy Link buttons. Deduplicated by Astro
-  // even though this component renders once per prediction.
-  async function copyText(text: string): Promise<boolean> {
-    if (navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(text);
-        return true;
-      } catch {
-        // fall through to the execCommand fallback below
-      }
-    }
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    let ok = false;
-    try {
-      ok = document.execCommand('copy');
-    } catch {
-      ok = false;
-    }
-    document.body.removeChild(textarea);
-    return ok;
-  }
-
-  document.querySelectorAll('[data-copy-link]').forEach((el) => {
-    el.addEventListener('click', async () => {
-      const link = el.getAttribute('data-copy-link');
-      if (!link) return;
-      const ok = await copyText(link);
-      const original = el.textContent;
-      el.textContent = ok ? 'Copied' : 'Copy failed';
-      setTimeout(() => {
-        el.textContent = original;
-      }, 1500);
-    });
-  });
-</script>
 
 <style>
   .prediction {
@@ -118,6 +75,12 @@ const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText
 
   .prediction-status {
     color: var(--color-text-muted);
+  }
+
+  .prediction-status[data-status='open'] {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--btc-orange-dark);
   }
 
   .prediction-title {
@@ -152,24 +115,15 @@ const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText
     gap: 1rem;
   }
 
-  .prediction-actions a,
-  .prediction-actions button {
-    appearance: none;
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    font: inherit;
+  .prediction-actions a {
     font-size: 0.82rem;
     color: var(--color-text-faint);
     text-decoration: underline;
     text-decoration-color: var(--color-border-strong);
     text-underline-offset: 2px;
-    cursor: pointer;
   }
 
-  .prediction-actions a:hover,
-  .prediction-actions button:hover {
+  .prediction-actions a:hover {
     color: var(--btc-orange-dark);
     text-decoration-color: var(--btc-orange);
   }

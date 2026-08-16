@@ -19,6 +19,13 @@ ${canonicalUrl}`;
 const shareTextFull = doc.plainText;
 ---
 
+<div class="doc-relationship page-shell">
+  <p>
+    <strong>Principles</strong> — what we believe is worth preserving. See also the <a href="/whitepaper">White Paper</a> — how
+    Bitcoin works.
+  </p>
+</div>
+
 {
   !isCurrent && (
     <div class="page-shell">
@@ -55,6 +62,18 @@ const shareTextFull = doc.plainText;
     justify-content: center;
     margin: 2.5rem auto;
     max-width: var(--measure);
+  }
+
+  .doc-relationship {
+    max-width: var(--measure);
+    margin: 2rem auto 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .doc-relationship a {
+    color: var(--color-text-muted);
+    text-decoration-color: var(--color-border-strong);
   }
 
   .archive-banner {
