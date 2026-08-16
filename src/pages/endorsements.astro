@@ -1,12 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { listApprovedSignatures, countApprovedSignatures, parseParticipantTypes } from '../lib/db';
-import { PARTICIPANT_TYPES } from '../lib/validation';
 
-const filter = Astro.url.searchParams.get('type');
-const activeType = filter && (PARTICIPANT_TYPES as readonly string[]).includes(filter) ? filter : 'All';
-
-const signatures = listApprovedSignatures(activeType);
+const signatures = listApprovedSignatures();
 const total = countApprovedSignatures();
 ---
 
@@ -18,24 +14,12 @@ const total = countApprovedSignatures();
     <h1>Endorsements</h1>
     <p>
       A restrained ledger of voluntary personal endorsements — not a leaderboard. Each entry is tied to the exact
-      Principles version its endorser affirmed; see <a href="/principles/versions">the version archive</a>.
+      Principles version its endorser affirmed.
     </p>
 
-    <div class="ledger-toolbar">
-      <span class="ledger-count">{total} endorsement{total === 1 ? '' : 's'}</span>
-      <nav class="ledger-filter" aria-label="Filter by participant type">
-        <a href="/endorsements" aria-current={activeType === 'All' ? 'true' : undefined}>All</a>
-        {
-          PARTICIPANT_TYPES.map((t) => (
-            <a href={`/endorsements?type=${encodeURIComponent(t)}`} aria-current={activeType === t ? 'true' : undefined}>
-              {t}
-            </a>
-          ))
-        }
-      </nav>
-    </div>
+    <p class="ledger-count">{total} endorsement{total === 1 ? '' : 's'}</p>
 
-    {signatures.length === 0 && <p>No approved endorsements yet in this category.</p>}
+    {signatures.length === 0 && <p>No approved endorsements yet.</p>}
 
     <ul class="ledger-list">
       {

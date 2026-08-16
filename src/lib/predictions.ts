@@ -34,6 +34,7 @@ export interface Prediction {
 
 export interface PredictionsDocument {
   introHtml: string;
+  introPlainText: string;
   predictions: Prediction[];
 }
 
@@ -101,6 +102,7 @@ export function getPredictions(): PredictionsDocument {
 
   return {
     introHtml: renderMarkdown(introSource.trim()),
+    introPlainText: markdownToPlainText(introSource.trim()),
     predictions,
   };
 }

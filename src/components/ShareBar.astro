@@ -1,4 +1,8 @@
 ---
+import XIcon from './XIcon.astro';
+import GitHubIcon from './GitHubIcon.astro';
+import { tweetIntent } from '../lib/share';
+
 interface Props {
   canonicalUrl: string;
   shareTextFull: string;
@@ -15,11 +19,6 @@ const {
   sourceLabel = 'View source',
 } = Astro.props;
 
-function tweetIntent(text: string, url?: string) {
-  const base = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
-  return url ? `${base}&url=${encodeURIComponent(url)}` : base;
-}
-
 // shareTextFull is the raw document text and doesn't include the link, so it's
 // appended via the `url` param. shareTextBrief already ends with the link
 // inline, so passing `url` too would duplicate it in the tweet.
@@ -28,9 +27,16 @@ const tweetUrlBrief = tweetIntent(shareTextBrief);
 ---
 
 <div class="share-bar">
-  {sourceUrl && <a href={sourceUrl} rel="noopener">{sourceLabel}</a>}
+  {
+    sourceUrl && (
+      <a class="github-source-btn" href={sourceUrl} rel="noopener">
+        <GitHubIcon class="github-icon" />
+        <span>{sourceLabel}</span>
+      </a>
+    )
+  }
   <details class="share-x">
-    <summary>Share on X</summary>
+    <summary class="x-share-btn"><XIcon class="x-icon" /><span>Share on X</span></summary>
     <div class="share-x-menu">
       <a href={tweetUrlFull} rel="noopener" target="_blank">Full text</a>
       <a href={tweetUrlBrief} rel="noopener" target="_blank">Brief description</a>

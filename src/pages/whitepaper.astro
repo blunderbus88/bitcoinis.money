@@ -1,18 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ShareBar from '../components/ShareBar.astro';
-import { getWhitePaperHtml, getWhitePaperMarkdown } from '../lib/whitepaper';
-import { markdownToPlainText } from '../lib/markdown';
+import { getWhitePaperHtml } from '../lib/whitepaper';
 
 const html = getWhitePaperHtml();
-const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
-const canonicalUrl = new URL('/whitepaper', siteUrl).toString();
-
-const shareTextBrief = `Bitcoin: A Peer-to-Peer Electronic Cash System — the original white paper by Satoshi Nakamoto.
-
-${canonicalUrl}`;
-
-const shareTextFull = markdownToPlainText(getWhitePaperMarkdown());
 ---
 
 <BaseLayout
@@ -20,18 +10,14 @@ const shareTextFull = markdownToPlainText(getWhitePaperMarkdown());
   description="Bitcoin: A Peer-to-Peer Electronic Cash System — the original white paper by Satoshi Nakamoto, hosted in full."
   current="whitepaper"
 >
-  <div class="doc-relationship page-shell">
-    <p>
+  <div class="page-shell">
+    <p class="doc-relationship">
       <strong>White Paper</strong> — Satoshi Nakamoto's technical explanation of how Bitcoin enables peer-to-peer
       electronic cash.
     </p>
   </div>
 
-  <ShareBar
-    canonicalUrl={canonicalUrl}
-    shareTextFull={shareTextFull}
-    shareTextBrief={shareTextBrief}
-  />
+  <div class="doc-divider"></div>
 
   <article class="reading-column whitepaper-body" set:html={html} />
 </BaseLayout>
@@ -51,5 +37,12 @@ const shareTextFull = markdownToPlainText(getWhitePaperMarkdown());
   .doc-relationship a {
     color: var(--color-text-muted);
     text-decoration-color: var(--color-border-strong);
+  }
+
+  .doc-divider {
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
   }
 </style>

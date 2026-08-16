@@ -181,7 +181,7 @@ main {
   flex-wrap: wrap;
   gap: 1rem 2rem;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   color: var(--color-text-muted);
   font-size: 0.9rem;
 }
@@ -386,8 +386,7 @@ main {
 }
 
 .share-bar button,
-.share-bar a,
-.share-bar details.share-x summary {
+.share-bar a {
   appearance: none;
   margin: 0;
   font-size: 0.85rem;
@@ -403,8 +402,7 @@ main {
 }
 
 .share-bar button:hover,
-.share-bar a:hover,
-.share-bar details.share-x summary:hover {
+.share-bar a:hover {
   border-color: var(--btc-orange);
   color: var(--btc-orange-dark);
 }
@@ -413,12 +411,74 @@ main {
   position: relative;
 }
 
-.share-bar details.share-x summary {
+/* ---------------------------------------------------------------------
+   "View source" button — black pill with a thin white stroke and the
+   Octocat mark, so it reads as an official GitHub source link.
+   --------------------------------------------------------------------- */
+
+.share-bar a.github-source-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid #fff;
+  background: var(--color-bg);
+  color: #fff;
+  font-weight: 600;
+}
+
+.share-bar a.github-source-btn:hover {
+  background: var(--color-bg-inset);
+  border-color: #fff;
+  color: #fff;
+}
+
+.github-source-btn .github-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------
+   "Share on X" button — black pill with a thin white stroke, matching
+   the "View source" button, so it reads as a real X share action.
+   --------------------------------------------------------------------- */
+
+.x-share-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #fff;
+  background: var(--color-bg);
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
   list-style: none;
 }
 
-.share-bar details.share-x summary::-webkit-details-marker {
+.x-share-btn::-webkit-details-marker {
   display: none;
+}
+
+.x-share-btn:hover {
+  background: var(--color-bg-inset);
+  border-color: #fff;
+  color: #fff;
+}
+
+.x-share-btn .x-icon {
+  width: 0.85em;
+  height: 0.85em;
+  flex-shrink: 0;
 }
 
 .share-x-menu {
@@ -546,39 +606,10 @@ main {
   font-size: 0.9rem;
 }
 
-.ledger-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
 .ledger-count {
   color: var(--color-text-muted);
   font-size: 0.9rem;
-}
-
-.ledger-filter {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
-.ledger-filter a {
-  font-size: 0.8rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid var(--color-border-strong);
-  text-decoration: none;
-  color: var(--color-text-muted);
-}
-
-.ledger-filter a[aria-current='true'] {
-  background: var(--btc-orange);
-  border-color: var(--btc-orange);
-  color: #ffffff;
+  margin-bottom: 1.5rem;
 }
 
 .ledger-list {
