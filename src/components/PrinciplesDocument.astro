@@ -7,11 +7,10 @@ interface Props {
   doc: RenderedPrinciples;
   isCurrent: boolean;
   sourceUrl: string;
-  markdownUrl: string;
   canonicalUrl: string;
 }
 
-const { doc, isCurrent, sourceUrl, markdownUrl, canonicalUrl } = Astro.props;
+const { doc, isCurrent, sourceUrl, canonicalUrl } = Astro.props;
 
 const shareTextBrief = `The White Paper explained how Bitcoin works. These Principles state what we believe Bitcoin is, why it matters, and what must endure.
 
@@ -33,7 +32,6 @@ const shareTextFull = doc.plainText;
 
 <ShareBar
   canonicalUrl={canonicalUrl}
-  markdownUrl={markdownUrl}
   shareTextFull={shareTextFull}
   shareTextBrief={shareTextBrief}
   sourceUrl={sourceUrl}

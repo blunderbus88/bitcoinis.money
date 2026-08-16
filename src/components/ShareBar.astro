@@ -1,7 +1,6 @@
 ---
 interface Props {
   canonicalUrl: string;
-  markdownUrl: string;
   shareTextFull: string;
   shareTextBrief: string;
   sourceUrl?: string;
@@ -10,7 +9,6 @@ interface Props {
 
 const {
   canonicalUrl,
-  markdownUrl,
   shareTextFull,
   shareTextBrief,
   sourceUrl,
@@ -38,33 +36,9 @@ const tweetUrlBrief = tweetIntent(shareTextBrief);
       <a href={tweetUrlBrief} rel="noopener" target="_blank">Brief description</a>
     </div>
   </details>
-  <button type="button" data-action="copy-markdown" data-markdown-url={markdownUrl}>Copy Markdown</button>
 </div>
 
 <script>
-  document.querySelectorAll('[data-action="copy-markdown"]').forEach((el) => {
-    el.addEventListener('click', async () => {
-      const src = el.getAttribute('data-markdown-url');
-      if (!src || !navigator.clipboard) return;
-      try {
-        const res = await fetch(src);
-        const text = await res.text();
-        await navigator.clipboard.writeText(text);
-        flash(el, 'Copied full text');
-      } catch {
-        flash(el, 'Copy failed');
-      }
-    });
-  });
-
-  function flash(el: Element, message: string) {
-    const original = el.textContent;
-    el.textContent = message;
-    setTimeout(() => {
-      el.textContent = original;
-    }, 1600);
-  }
-
   document.querySelectorAll('details.share-x').forEach((details) => {
     details.querySelectorAll('a').forEach((a) => {
       a.addEventListener('click', () => details.removeAttribute('open'));

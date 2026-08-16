@@ -33,6 +33,14 @@ const ERROR_MESSAGES: Record<string, string> = {
       are reviewed before appearing publicly.
     </p>
 
+    {doc && (
+      <p class="version-pin-note">
+        You are endorsing <strong>Principles v{doc.version}</strong> · BLAKE2b <code>{doc.hash.slice(0, 16)}…</code>. If
+        a newer version is published later, your endorsement stays tied to this exact text — it is never carried
+        forward automatically.
+      </p>
+    )}
+
     {!doc && (
       <p class="form-error">No version of the Principles has been published yet, so endorsing isn't open.</p>
     )}
@@ -104,14 +112,6 @@ const ERROR_MESSAGES: Record<string, string> = {
         </div>
       </form>
     )}
-
-    {doc && (
-      <p class="version-pin-note">
-        You are endorsing <strong>Principles v{doc.version}</strong> · BLAKE2b <code>{doc.hash.slice(0, 16)}…</code>. If
-        a newer version is published later, your endorsement stays tied to this exact text — it is never carried
-        forward automatically.
-      </p>
-    )}
   </div>
 
   {siteKey && <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>}
@@ -121,6 +121,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   .version-pin-note {
     color: var(--color-text-faint);
     font-size: 0.85rem;
-    margin-top: 2rem;
+    margin-top: 0.75rem;
   }
 </style>

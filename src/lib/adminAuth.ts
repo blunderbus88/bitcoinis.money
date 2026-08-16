@@ -42,6 +42,6 @@ export function isAuthorizedAdmin(request: Request): boolean {
 export function requireBasicAuthResponse(): Response {
   return new Response('Authentication required', {
     status: 401,
-    headers: { 'WWW-Authenticate': 'Basic realm="bitcoinis.money admin"' },
+    headers: { 'WWW-Authenticate': 'Basic realm="bitcoinIS.money admin"' },
   });
 }
