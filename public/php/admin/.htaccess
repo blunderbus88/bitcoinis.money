@@ -4,11 +4,12 @@
 # /admin/endorsements/{id}, and /api/admin/* (all rewritten into this
 # directory by ../../.htaccess).
 #
-# {{REPO_ROOT}} is substituted with the real absolute path by
-# deploy/hooks/post-merge on every deploy — AuthUserFile needs an absolute
-# path and this repo's checkout location varies by environment. Left as a
-# literal placeholder here (harmless no-op) if this .htaccess is ever served
-# without going through that hook, e.g. `astro build` run standalone.
+# {{REPO_ROOT}} is substituted with the real absolute path by the "Bake
+# server path" step in .github/workflows/deploy.yml on every deploy —
+# AuthUserFile needs an absolute path and this repo's checkout location on
+# the server isn't known at build time. Left as a literal placeholder here
+# (harmless no-op) if this .htaccess is ever served without going through
+# that step, e.g. `astro build` run standalone.
 AuthType Basic
 AuthName "BitcoinIs.Money admin"
 AuthUserFile {{REPO_ROOT}}/.htpasswd
