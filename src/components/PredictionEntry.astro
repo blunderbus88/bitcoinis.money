@@ -1,0 +1,199 @@
+---
+import type { Prediction } from '../lib/predictions';
+
+interface Props {
+  prediction: Prediction;
+  pageUrl: string;
+}
+
+const { prediction, pageUrl } = Astro.props;
+
+const anchorUrl = `${pageUrl}#${prediction.slug}`;
+
+// publishedAt is a bare YYYY-MM-DD (no time component); format it in UTC so
+// the displayed date can't shift a day depending on the server's local
+// timezone (new Date('2026-08-15') is midnight UTC, not midnight local).
+const dateLabel = new Date(prediction.publishedAt).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const tweetText = `Prediction ${prediction.number} — ${prediction.title}`;
+const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(anchorUrl)}`;
+---
+
+<section class="prediction" id={prediction.slug}>
+  <div class="prediction-meta">
+    <span class="prediction-number">Prediction {prediction.number}</span>
+    <span class="prediction-status" data-status={prediction.status}>{prediction.statusLabel}</span>
+  </div>
+
+  <h2 class="prediction-title"><a href={`#${prediction.slug}`}>{prediction.title}</a></h2>
+
+  <div class="prediction-body" set:html={prediction.bodyHtml} />
+
+  <div class="prediction-footer">
+    <span class="prediction-date">Published {dateLabel}</span>
+    <span class="prediction-actions">
+      <a href={tweetUrl} rel="noopener" target="_blank">Share on X</a>
+      <button type="button" data-copy-link={anchorUrl}>Copy Link</button>
+    </span>
+  </div>
+
+  {
+    prediction.updatesHtml && (
+      <div class="prediction-updates">
+        <h3>Updates</h3>
+        <div set:html={prediction.updatesHtml} />
+      </div>
+    )
+  }
+</section>
+
+<script>
+  // Progressive enhancement only: the Share on X link works with plain
+  // HTML; this just wires up the Copy Link buttons. Deduplicated by Astro
+  // even though this component renders once per prediction.
+  async function copyText(text: string): Promise<boolean> {
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // fall through to the execCommand fallback below
+      }
+    }
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    let ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch {
+      ok = false;
+    }
+    document.body.removeChild(textarea);
+    return ok;
+  }
+
+  document.querySelectorAll('[data-copy-link]').forEach((el) => {
+    el.addEventListener('click', async () => {
+      const link = el.getAttribute('data-copy-link');
+      if (!link) return;
+      const ok = await copyText(link);
+      const original = el.textContent;
+      el.textContent = ok ? 'Copied' : 'Copy failed';
+      setTimeout(() => {
+        el.textContent = original;
+      }, 1500);
+    });
+  });
+</script>
+
+<style>
+  .prediction {
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .prediction:first-of-type {
+    padding-top: 2rem;
+  }
+
+  .prediction-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--color-text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+  }
+
+  .prediction-status {
+    color: var(--color-text-muted);
+  }
+
+  .prediction-title {
+    margin: 0 0 1rem;
+  }
+
+  .prediction-title a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .prediction-title a:hover {
+    color: var(--btc-orange-dark);
+  }
+
+  .prediction-body {
+    font-size: 1.05rem;
+  }
+
+  .prediction-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--color-text-faint);
+  }
+
+  .prediction-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .prediction-actions a,
+  .prediction-actions button {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--color-text-faint);
+    text-decoration: underline;
+    text-decoration-color: var(--color-border-strong);
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  .prediction-actions a:hover,
+  .prediction-actions button:hover {
+    color: var(--btc-orange-dark);
+    text-decoration-color: var(--btc-orange);
+  }
+
+  .prediction-updates {
+    margin-top: 1.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+  }
+
+  .prediction-updates h3 {
+    margin: 0 0 0.6rem;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-faint);
+    font-weight: 600;
+  }
+
+  .prediction-updates :global(p) {
+    margin: 0.6em 0;
+  }
+</style>

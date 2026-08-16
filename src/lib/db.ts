@@ -39,7 +39,7 @@ export type ParticipantType =
 
 export interface NewSignature {
   name: string;
-  participantType: ParticipantType;
+  participantTypes: ParticipantType[];
   website: string | null;
   github: string | null;
   xProfile: string | null;
@@ -53,7 +53,8 @@ export interface NewSignature {
 export interface Signature {
   id: number;
   name: string;
-  participant_type: ParticipantType;
+  /** Comma-separated list of participant types; use parseParticipantTypes() to read it. */
+  participant_type: string;
   website: string | null;
   github: string | null;
   x_profile: string | null;
@@ -66,6 +67,14 @@ export interface Signature {
   moderated_at: string | null;
 }
 
+/** Splits a stored comma-separated participant_type value back into individual types. */
+export function parseParticipantTypes(raw: string): string[] {
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export function insertSignature(sig: NewSignature): number {
   const stmt = getDb().prepare(`
     INSERT INTO signatures (
@@ -76,18 +85,19 @@ export function insertSignature(sig: NewSignature): number {
       @principlesVersion, @principlesHash, 'pending', @ipHash
     )
   `);
-  const info = stmt.run(sig);
+  const info = stmt.run({ ...sig, participantType: sig.participantTypes.join(',') });
   return Number(info.lastInsertRowid);
 }
 
 export function listApprovedSignatures(participantType?: string): Signature[] {
   const db = getDb();
+  const rows = db
+    .prepare(`SELECT * FROM signatures WHERE status = 'approved' ORDER BY moderated_at DESC`)
+    .all() as Signature[];
   if (participantType && participantType !== 'All') {
-    return db
-      .prepare(`SELECT * FROM signatures WHERE status = 'approved' AND participant_type = ? ORDER BY moderated_at DESC`)
-      .all(participantType) as Signature[];
+    return rows.filter((r) => parseParticipantTypes(r.participant_type).includes(participantType));
   }
-  return db.prepare(`SELECT * FROM signatures WHERE status = 'approved' ORDER BY moderated_at DESC`).all() as Signature[];
+  return rows;
 }
 
 export function countApprovedSignatures(): number {

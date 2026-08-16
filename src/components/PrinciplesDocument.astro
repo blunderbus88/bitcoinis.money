@@ -1,5 +1,4 @@
 ---
-import DocMeta from './DocMeta.astro';
 import ShareBar from './ShareBar.astro';
 import TerminologyNote from './TerminologyNote.astro';
 import type { RenderedPrinciples } from '../lib/principles';
@@ -14,8 +13,11 @@ interface Props {
 
 const { doc, isCurrent, sourceUrl, markdownUrl, canonicalUrl } = Astro.props;
 
-const shareText =
-  'Bitcoin is more than consensus code. These Principles attempt to state plainly what Bitcoin is, what makes it worth preserving, and what responsibilities come with carrying it forward.';
+const shareTextBrief = `The White Paper explained how Bitcoin works. These Principles state what we believe Bitcoin is, why it matters, and what must endure.
+
+${canonicalUrl}`;
+
+const shareTextFull = doc.plainText;
 ---
 
 {
@@ -29,24 +31,32 @@ const shareText =
   )
 }
 
-<DocMeta
-  version={doc.version}
-  publishedAt={doc.publishedAt}
-  hash={doc.hash}
-  sourceUrl={sourceUrl}
+<ShareBar
+  canonicalUrl={canonicalUrl}
   markdownUrl={markdownUrl}
-  showBeginnerToggle={true}
+  shareTextFull={shareTextFull}
+  shareTextBrief={shareTextBrief}
+  sourceUrl={sourceUrl}
 />
 
 <TerminologyNote />
 
-<ShareBar canonicalUrl={canonicalUrl} markdownUrl={markdownUrl} shareText={shareText} />
-
 <article class="reading-column principles-body" set:html={doc.htmlBeginner} />
+
+<div class="principles-sign-cta">
+  <a class="btn btn-primary" href="/endorse">ENDORSE</a>
+</div>
 
 <style>
   .principles-body {
     max-width: 80ch;
+  }
+
+  .principles-sign-cta {
+    display: flex;
+    justify-content: center;
+    margin: 2.5rem auto;
+    max-width: var(--measure);
   }
 
   .archive-banner {

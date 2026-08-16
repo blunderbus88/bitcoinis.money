@@ -20,5 +20,5 @@ export const POST: APIRoute = async ({ request }) => {
 
   moderateSignature(id, status);
 
-  return new Response(null, { status: 303, headers: { Location: '/admin/signatures' } });
+  return new Response(null, { status: 303, headers: { Location: '/admin/endorsements' } });
 };

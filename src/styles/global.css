@@ -92,6 +92,9 @@ h4 {
    --------------------------------------------------------------------- */
 
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-bg);
 }
@@ -309,135 +312,17 @@ main {
 }
 
 /* ---------------------------------------------------------------------
-   Document metadata bar (Principles / White Paper)
+   Beginner explanations (term annotations, always on)
    --------------------------------------------------------------------- */
 
-.doc-meta {
-  max-width: var(--measure);
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 0;
-}
-
-.doc-meta-card {
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem 2rem;
-  justify-content: space-between;
-  align-items: flex-start;
-  font-size: 0.9rem;
-}
-
-.doc-meta-facts {
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 0.35rem 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.doc-meta-facts dt {
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.doc-meta-facts dd {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  word-break: break-all;
-}
-
-.doc-meta-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  align-items: flex-end;
-}
-
-.doc-meta-actions .link-row {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  font-size: 0.85rem;
-}
-
-/* ---------------------------------------------------------------------
-   Beginner Mode toggle (checkbox-hack; works without JS)
-   --------------------------------------------------------------------- */
-
-.beginner-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-  cursor: pointer;
-  user-select: none;
-}
-
-.beginner-toggle input[type='checkbox'] {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-}
-
-.switch-track {
-  width: 34px;
-  height: 20px;
-  background: var(--color-border-strong);
-  border-radius: 999px;
-  position: relative;
-  transition: background 0.15s ease;
-  flex-shrink: 0;
-}
-
-.switch-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #ffffff;
-  transition: transform 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-}
-
-/* Beginner Mode is a single checkbox that can live anywhere in the page
-   (its visible switch UI sits in the doc-meta bar via a <label for>); every
-   state-dependent rule below targets it with :has() rather than a sibling
-   combinator, so it isn't constrained to a particular DOM position. */
-
-body:has(#beginner-toggle:checked) .switch-track {
-  background: var(--btc-orange);
-}
-
-body:has(#beginner-toggle:checked) .switch-track .switch-thumb {
-  transform: translateX(14px);
-}
-
-#beginner-toggle:focus-visible + .switch-track {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-/* Terms: dotted underline + tooltip only appear when Beginner Mode is on. */
 .term {
-  cursor: default;
-}
-
-body:has(#beginner-toggle:checked) .term {
   border-bottom: 1px dotted var(--btc-orange-dark);
   cursor: help;
   position: relative;
 }
 
-body:has(#beginner-toggle:checked) .term:hover::after,
-body:has(#beginner-toggle:checked) .term:focus::after {
+.term:hover::after,
+.term:focus::after {
   content: attr(data-definition);
   position: absolute;
   left: 0;
@@ -469,8 +354,8 @@ body:has(#beginner-toggle:checked) .term:focus::after {
 .terminology-note details {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 0.6rem 0.9rem;
-  font-size: 0.85rem;
+  padding: 0.8rem 1.1rem;
+  font-size: 0.95rem;
   color: var(--color-text-muted);
   background: var(--color-bg-subtle);
 }
@@ -486,22 +371,28 @@ body:has(#beginner-toggle:checked) .term:focus::after {
 }
 
 /* ---------------------------------------------------------------------
-   Share bar
+   Share bar (share/copy/source actions)
    --------------------------------------------------------------------- */
 
 .share-bar {
   max-width: var(--measure);
   margin: 0 auto;
-  padding: 1rem 1.25rem 0;
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .share-bar button,
-.share-bar a {
+.share-bar a,
+.share-bar details.share-x summary {
+  appearance: none;
+  margin: 0;
   font-size: 0.85rem;
-  padding: 0.45rem 0.9rem;
+  line-height: 1;
+  padding: 0.5rem 0.9rem;
   border-radius: 999px;
   border: 1px solid var(--color-border-strong);
   background: var(--color-bg);
@@ -512,8 +403,50 @@ body:has(#beginner-toggle:checked) .term:focus::after {
 }
 
 .share-bar button:hover,
-.share-bar a:hover {
+.share-bar a:hover,
+.share-bar details.share-x summary:hover {
   border-color: var(--btc-orange);
+  color: var(--btc-orange-dark);
+}
+
+.share-bar details.share-x {
+  position: relative;
+}
+
+.share-bar details.share-x summary {
+  list-style: none;
+}
+
+.share-bar details.share-x summary::-webkit-details-marker {
+  display: none;
+}
+
+.share-x-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 180px;
+  padding: 0.35rem;
+  background: var(--color-bg-inset);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+}
+
+.share-x-menu a {
+  padding: 0.45rem 0.6rem;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: none;
+  white-space: nowrap;
+}
+
+.share-x-menu a:hover {
+  background: var(--btc-orange-tint);
+  border-color: transparent;
   color: var(--btc-orange-dark);
 }
 
@@ -557,6 +490,33 @@ body:has(#beginner-toggle:checked) .term:focus::after {
 .form-field textarea {
   resize: vertical;
   min-height: 4.5rem;
+}
+
+.checkbox-group {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.5rem;
+}
+
+.checkbox-group legend {
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0 0.35rem;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.checkbox-option input[type='checkbox'] {
+  width: auto;
 }
 
 .form-note {
@@ -646,6 +606,13 @@ body:has(#beginner-toggle:checked) .term:focus::after {
   font-size: 0.85rem;
 }
 
+.ledger-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  height: fit-content;
+}
+
 .ledger-type {
   font-size: 0.78rem;
   color: var(--color-text-muted);
@@ -712,9 +679,7 @@ body:has(#beginner-toggle:checked) .term:focus::after {
   .site-header,
   .site-footer,
   .share-bar,
-  .terminology-note,
-  .doc-meta-actions,
-  .beginner-toggle {
+  .terminology-note {
     display: none !important;
   }
 
@@ -734,13 +699,5 @@ body:has(#beginner-toggle:checked) .term:focus::after {
 
   .hero h1 {
     font-size: 1.75rem;
-  }
-
-  .doc-meta-card {
-    flex-direction: column;
-  }
-
-  .doc-meta-actions {
-    align-items: flex-start;
   }
 }

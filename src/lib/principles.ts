@@ -10,7 +10,7 @@
 // snapshot and updates principles-meta.json in the same step.
 
 import { readFileSync, existsSync } from 'node:fs';
-import { renderMarkdown, renderMarkdownWithAnnotations, type AnnotationDictionary } from './markdown';
+import { renderMarkdown, renderMarkdownWithAnnotations, markdownToPlainText, type AnnotationDictionary } from './markdown';
 import { PROJECT_ROOT } from './projectRoot';
 
 const ROOT = `${PROJECT_ROOT}/`;
@@ -35,8 +35,10 @@ export interface RenderedPrinciples {
   hash: string;
   publishedAt: string;
   markdown: string;
+  plainText: string;
   html: string;
   htmlBeginner: string;
+  filename: string;
 }
 
 function loadMeta(): PrinciplesMeta {
@@ -51,6 +53,16 @@ export function loadAnnotations(): AnnotationDictionary {
   return terms;
 }
 
+/**
+ * The filename a downloaded copy of this version should be saved as: stable,
+ * collision-free across versions, and self-describing without needing to
+ * open the file (unlike the bare "v1.1.md" archive filename on disk).
+ */
+export function downloadFilename(entry: Pick<VersionMeta, 'version' | 'publishedAt'>): string {
+  const date = entry.publishedAt.slice(0, 10); // YYYY-MM-DD
+  return `principles-v${entry.version}-${date}.md`;
+}
+
 function renderVersion(entry: VersionMeta): RenderedPrinciples | null {
   const filePath = `${ROOT}${entry.file}`;
   if (!existsSync(filePath)) return null;
@@ -63,8 +75,10 @@ function renderVersion(entry: VersionMeta): RenderedPrinciples | null {
     hash: entry.hash,
     publishedAt: entry.publishedAt,
     markdown,
+    plainText: markdownToPlainText(markdown),
     html: renderMarkdown(markdown),
     htmlBeginner: renderMarkdownWithAnnotations(markdown, annotations),
+    filename: downloadFilename(entry),
   };
 }
 

@@ -1,13 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ShareBar from '../components/ShareBar.astro';
 import { getWhitePaperHtml } from '../lib/whitepaper';
 
 const html = getWhitePaperHtml();
-const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
-const canonicalUrl = new URL('/whitepaper', siteUrl).toString();
-const shareText =
-  'The original Bitcoin white paper — how the system actually works, in Satoshi Nakamoto’s own words.';
 ---
 
 <BaseLayout
@@ -21,8 +16,6 @@ const shareText =
       believe is worth preserving.
     </p>
   </div>
-
-  <ShareBar canonicalUrl={canonicalUrl} markdownUrl="/whitepaper.md" shareText={shareText} />
 
   <article class="reading-column whitepaper-body" set:html={html} />
 </BaseLayout>

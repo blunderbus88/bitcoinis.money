@@ -1,10 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PrinciplesDocument from '../../components/PrinciplesDocument.astro';
-import { getCurrentPrinciples, listVersions } from '../../lib/principles';
+import { getCurrentPrinciples } from '../../lib/principles';
 
 const doc = getCurrentPrinciples();
-const versions = listVersions();
 const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
 const sourceUrl = 'https://github.com/blunderbus88/Bitcoin/blob/main/principles.md';
 ---
@@ -22,28 +21,12 @@ const sourceUrl = 'https://github.com/blunderbus88/Bitcoin/blob/main/principles.
   )}
 
   {doc !== null && (
-    <>
-      <PrinciplesDocument
-        doc={doc}
-        isCurrent={true}
-        sourceUrl={sourceUrl}
-        markdownUrl="/principles.md"
-        canonicalUrl={new URL('/principles', siteUrl).toString()}
-      />
-
-      {versions.length > 1 && (
-        <div class="page-shell version-links">
-          <a href="/principles/versions">View all published versions ({versions.length}) →</a>
-        </div>
-      )}
-    </>
+    <PrinciplesDocument
+      doc={doc}
+      isCurrent={true}
+      sourceUrl={sourceUrl}
+      markdownUrl="/principles.md"
+      canonicalUrl={new URL('/principles', siteUrl).toString()}
+    />
   )}
 </BaseLayout>
-
-<style>
-  .version-links {
-    max-width: var(--measure);
-    margin: 1.5rem auto 3rem;
-    font-size: 0.9rem;
-  }
-</style>

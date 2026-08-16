@@ -44,9 +44,11 @@ export function validateName(input: unknown): string | null {
   return value;
 }
 
-export function validateParticipantType(input: unknown): ParticipantType | null {
-  if (typeof input !== 'string') return null;
-  return (PARTICIPANT_TYPES as readonly string[]).includes(input) ? (input as ParticipantType) : null;
+/** Accepts the values of a repeated `participant_type` field (e.g. FormData.getAll()). */
+export function validateParticipantTypes(input: unknown[]): ParticipantType[] | null {
+  const submitted = new Set(input.filter((v): v is string => typeof v === 'string'));
+  const value = PARTICIPANT_TYPES.filter((t) => submitted.has(t));
+  return value.length > 0 ? value : null;
 }
 
 /** Generic https:// URL validator for the free-text "website" field. */

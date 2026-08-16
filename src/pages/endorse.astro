@@ -14,40 +14,40 @@ const ERROR_MESSAGES: Record<string, string> = {
   validation: 'Please check the highlighted fields and try again.',
   challenge: 'The anti-spam challenge could not be verified. Please try again.',
   rate_limited: 'Too many submissions from this connection recently. Please try again later.',
-  version: 'The Principles were updated while you were filling this out. Please reload and sign the current version.',
-  unknown: 'Something went wrong submitting your signature. Please try again.',
+  version: 'The Principles were updated while you were filling this out. Please reload and endorse the current version.',
+  unknown: 'Something went wrong submitting your endorsement. Please try again.',
 };
 ---
 
 <BaseLayout
-  title="Sign the Principles"
+  title="Endorse the Principles"
   description="Add your voluntary personal endorsement of the current version of Our Bitcoin Principles."
-  current="sign"
+  current="endorse"
 >
   <div class="reading-column">
-    <h1>Sign the Principles</h1>
+    <h1>Endorse the Principles</h1>
 
     <p class="form-note">
-      Signing affirms only that you personally endorse these Principles. It grants no membership, authority, or
+      Endorsing affirms only that you personally stand behind these Principles. It grants no membership, authority, or
       special status. You are not required to use your real name, and you do not need a GitHub account. Submissions
       are reviewed before appearing publicly.
     </p>
 
     {!doc && (
-      <p class="form-error">No version of the Principles has been published yet, so signing isn't open.</p>
+      <p class="form-error">No version of the Principles has been published yet, so endorsing isn't open.</p>
     )}
 
     {submitted && (
       <p class="form-success">
-        Thank you — your signature has been recorded and is pending review. Approved signatures appear on the
-        <a href="/signatures">signature ledger</a>.
+        Thank you — your endorsement has been recorded and is pending review. Approved endorsements appear on the
+        <a href="/endorsements">endorsement ledger</a>.
       </p>
     )}
 
     {errorCode && <p class="form-error">{ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.unknown}</p>}
 
     {doc && (
-      <form method="POST" action="/api/sign" class="form-grid">
+      <form method="POST" action="/api/endorse" class="form-grid">
         <input type="hidden" name="principles_version" value={doc.version} />
         <input type="hidden" name="principles_hash" value={doc.hash} />
 
@@ -57,15 +57,15 @@ const ERROR_MESSAGES: Record<string, string> = {
         </div>
 
         <div class="form-field">
-          <label for="participant_type">Participant type</label>
-          <select id="participant_type" name="participant_type" required>
-            <option value="" disabled selected>
-              Choose one
-            </option>
+          <fieldset class="checkbox-group">
+            <legend>Participant type <span class="hint">(select all that apply)</span></legend>
             {PARTICIPANT_TYPES.map((t) => (
-              <option value={t}>{t}</option>
+              <label class="checkbox-option">
+                <input type="checkbox" name="participant_type" value={t} />
+                {t}
+              </label>
             ))}
-          </select>
+          </fieldset>
         </div>
 
         <div class="form-field">
@@ -100,15 +100,15 @@ const ERROR_MESSAGES: Record<string, string> = {
         )}
 
         <div>
-          <button type="submit" class="btn btn-primary">Sign the Principles</button>
+          <button type="submit" class="btn btn-primary">Endorse the Principles</button>
         </div>
       </form>
     )}
 
     {doc && (
       <p class="version-pin-note">
-        You are signing <strong>Principles v{doc.version}</strong> · BLAKE2b <code>{doc.hash.slice(0, 16)}…</code>. If
-        a newer version is published later, your signature stays tied to this exact text — it is never carried
+        You are endorsing <strong>Principles v{doc.version}</strong> · BLAKE2b <code>{doc.hash.slice(0, 16)}…</code>. If
+        a newer version is published later, your endorsement stays tied to this exact text — it is never carried
         forward automatically.
       </p>
     )}

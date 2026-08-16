@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ShareBar from '../../components/ShareBar.astro';
+import PredictionEntry from '../../components/PredictionEntry.astro';
+import { getPredictions } from '../../lib/predictions';
+
+const doc = getPredictions();
+const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
+const canonicalUrl = new URL('/predictions', siteUrl).toString();
+const sourceUrl = 'https://github.com/blunderbus88/Bitcoin/blob/main/Predictions.md';
+
+const shareTextBrief = `A record for the future: our concerns about what will happen to BTC-SHA256, documented at the founding of BTC-BLAKE2b.
+
+${canonicalUrl}`;
+
+const shareTextFull = doc.predictions
+  .map((p) => `${p.number}. ${p.title}\n\n${p.bodyPlainText}`)
+  .join('\n\n');
+---
+
+<BaseLayout
+  title="Predictions"
+  description="A timestamped record of concerns and expectations held at the founding of BTC-SHA256, preserved to be judged against what actually happens."
+  current="predictions"
+>
+  <div class="page-shell">
+    <p class="doc-relationship">
+      <strong>Predictions</strong> — not Principles, and not certainties. Expectations about where BTC-SHA256 may go,
+      written down to be judged later. See also the <a href="/principles">Principles</a>.
+    </p>
+  </div>
+
+  <ShareBar
+    canonicalUrl={canonicalUrl}
+    markdownUrl="/predictions.md"
+    shareTextFull={shareTextFull}
+    shareTextBrief={shareTextBrief}
+    sourceUrl={sourceUrl}
+    sourceLabel="View source & history on GitHub"
+  />
+
+  <article class="reading-column predictions-body">
+    <div set:html={doc.introHtml} />
+
+    {doc.predictions.map((p) => <PredictionEntry prediction={p} pageUrl={canonicalUrl} />)}
+  </article>
+</BaseLayout>
+
+<style>
+  .predictions-body {
+    max-width: 80ch;
+  }
+
+  .doc-relationship {
+    max-width: var(--measure);
+    margin: 2rem auto 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .doc-relationship a {
+    color: var(--color-text-muted);
+    text-decoration-color: var(--color-border-strong);
+  }
+</style>

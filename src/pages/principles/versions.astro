@@ -8,15 +8,15 @@ const current = versions[0];
 
 <BaseLayout
   title="Principles — Version Archive"
-  description="Every published version of Our Bitcoin Principles, preserved with its exact hash and publication date."
+  description="Every published version of Our Bitcoin Principles, preserved exactly as it read at the time it was published."
   current="principles"
 >
   <div class="reading-column">
     <h1>Version Archive</h1>
     <p>
       Every version of the Principles that has ever been published is preserved here exactly as it read at the
-      time, with its BLAKE2b hash. Signatures are always tied to one specific version — see the
-      <a href="/signatures">signature ledger</a>.
+      time. Endorsements are always tied to one specific version — see the
+      <a href="/endorsements">endorsement ledger</a>.
     </p>
 
     {versions.length === 0 && <p>No version has been published yet.</p>}
@@ -31,8 +31,6 @@ const current = versions[0];
             </span>
             <span class="ledger-meta">
               {new Date(v.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-              {' · '}
-              <code>{v.hash.slice(0, 16)}…</code>
             </span>
           </li>
         ))

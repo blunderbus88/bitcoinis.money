@@ -2,33 +2,46 @@
 interface Props {
   canonicalUrl: string;
   markdownUrl: string;
-  shareText: string;
+  shareTextFull: string;
+  shareTextBrief: string;
+  sourceUrl?: string;
+  sourceLabel?: string;
 }
 
-const { canonicalUrl, markdownUrl, shareText } = Astro.props;
+const {
+  canonicalUrl,
+  markdownUrl,
+  shareTextFull,
+  shareTextBrief,
+  sourceUrl,
+  sourceLabel = 'View source',
+} = Astro.props;
 
-const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(
-  canonicalUrl
-)}`;
+function tweetIntent(text: string, url?: string) {
+  const base = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  return url ? `${base}&url=${encodeURIComponent(url)}` : base;
+}
+
+// shareTextFull is the raw document text and doesn't include the link, so it's
+// appended via the `url` param. shareTextBrief already ends with the link
+// inline, so passing `url` too would duplicate it in the tweet.
+const tweetUrlFull = tweetIntent(shareTextFull, canonicalUrl);
+const tweetUrlBrief = tweetIntent(shareTextBrief);
 ---
 
 <div class="share-bar">
-  <a href={tweetUrl} rel="noopener" target="_blank">Share on X</a>
-  <button type="button" data-action="copy-link" data-url={canonicalUrl}>Copy Link</button>
+  {sourceUrl && <a href={sourceUrl} rel="noopener">{sourceLabel}</a>}
+  <details class="share-x">
+    <summary>Share on X</summary>
+    <div class="share-x-menu">
+      <a href={tweetUrlFull} rel="noopener" target="_blank">Full text</a>
+      <a href={tweetUrlBrief} rel="noopener" target="_blank">Brief description</a>
+    </div>
+  </details>
   <button type="button" data-action="copy-markdown" data-markdown-url={markdownUrl}>Copy Markdown</button>
-  <button type="button" data-action="print">Print</button>
 </div>
 
 <script>
-  document.querySelectorAll('[data-action="copy-link"]').forEach((el) => {
-    el.addEventListener('click', async () => {
-      const url = el.getAttribute('data-url');
-      if (!url || !navigator.clipboard) return;
-      await navigator.clipboard.writeText(url);
-      flash(el, 'Copied');
-    });
-  });
-
   document.querySelectorAll('[data-action="copy-markdown"]').forEach((el) => {
     el.addEventListener('click', async () => {
       const src = el.getAttribute('data-markdown-url');
@@ -44,10 +57,6 @@ const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText
     });
   });
 
-  document.querySelectorAll('[data-action="print"]').forEach((el) => {
-    el.addEventListener('click', () => window.print());
-  });
-
   function flash(el: Element, message: string) {
     const original = el.textContent;
     el.textContent = message;
@@ -55,4 +64,16 @@ const tweetUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText
       el.textContent = original;
     }, 1600);
   }
+
+  document.querySelectorAll('details.share-x').forEach((details) => {
+    details.querySelectorAll('a').forEach((a) => {
+      a.addEventListener('click', () => details.removeAttribute('open'));
+    });
+  });
+
+  document.addEventListener('click', (event) => {
+    document.querySelectorAll('details.share-x[open]').forEach((details) => {
+      if (!details.contains(event.target as Node)) details.removeAttribute('open');
+    });
+  });
 </script>

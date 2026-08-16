@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCurrentPrinciples } from '../../lib/principles';
 import {
   validateName,
-  validateParticipantType,
+  validateParticipantTypes,
   validateUrl,
   validateGithub,
   validateXProfile,
@@ -28,18 +28,18 @@ export const POST: APIRoute = async ({ request, url }) => {
   try {
     form = await request.formData();
   } catch {
-    return redirectTo(url, '/sign', { error: 'validation' });
+    return redirectTo(url, '/endorse', { error: 'validation' });
   }
 
   const ip = getClientIp(request);
   const ipHash = hashIp(ip);
 
   if (isRateLimited(ipHash)) {
-    return redirectTo(url, '/sign', { error: 'rate_limited' });
+    return redirectTo(url, '/endorse', { error: 'rate_limited' });
   }
 
   const name = validateName(form.get('name'));
-  const participantType = validateParticipantType(form.get('participant_type'));
+  const participantTypes = validateParticipantTypes(form.getAll('participant_type'));
   const website = validateUrl(form.get('website'));
   const github = validateGithub(form.get('github'));
   const xProfile = validateXProfile(form.get('x_profile'));
@@ -48,8 +48,8 @@ export const POST: APIRoute = async ({ request, url }) => {
   const submittedVersion = validateVersion(form.get('principles_version'));
   const submittedHash = validateHash(form.get('principles_hash'));
 
-  if (!name || !participantType || !submittedVersion || !submittedHash) {
-    return redirectTo(url, '/sign', { error: 'validation' });
+  if (!name || !participantTypes || !submittedVersion || !submittedHash) {
+    return redirectTo(url, '/endorse', { error: 'validation' });
   }
 
   // The signature must be bound to the currently published version. If the
@@ -57,18 +57,18 @@ export const POST: APIRoute = async ({ request, url }) => {
   // rather than silently signing the wrong (or a stale) version.
   const current = getCurrentPrinciples();
   if (!current || submittedVersion !== current.version || submittedHash !== current.hash) {
-    return redirectTo(url, '/sign', { error: 'version' });
+    return redirectTo(url, '/endorse', { error: 'version' });
   }
 
   const turnstileToken = form.get('cf-turnstile-response');
   const verified = await verifyTurnstile(typeof turnstileToken === 'string' ? turnstileToken : null, ip);
   if (!verified) {
-    return redirectTo(url, '/sign', { error: 'challenge' });
+    return redirectTo(url, '/endorse', { error: 'challenge' });
   }
 
   insertSignature({
     name,
-    participantType,
+    participantTypes,
     website,
     github,
     xProfile,
@@ -79,5 +79,5 @@ export const POST: APIRoute = async ({ request, url }) => {
     ipHash,
   });
 
-  return redirectTo(url, '/sign', { submitted: '1' });
+  return redirectTo(url, '/endorse', { submitted: '1' });
 };

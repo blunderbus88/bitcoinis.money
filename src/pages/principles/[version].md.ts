@@ -10,6 +10,9 @@ export const GET: APIRoute = ({ params }) => {
   if (!doc) return new Response('Not found', { status: 404 });
 
   return new Response(doc.markdown, {
-    headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
+    headers: {
+      'Content-Type': 'text/markdown; charset=utf-8',
+      'Content-Disposition': `inline; filename="${doc.filename}"`,
+    },
   });
 };

@@ -1,7 +1,7 @@
 ---
 import BitcoinMark from './BitcoinMark.astro';
 interface Props {
-  current?: 'principles' | 'whitepaper' | 'sign';
+  current?: 'principles' | 'whitepaper' | 'predictions' | 'endorse';
 }
 const { current } = Astro.props;
 ---
@@ -14,13 +14,16 @@ const { current } = Astro.props;
     </a>
     <ul class="nav-links">
       <li>
-        <a href="/principles" aria-current={current === 'principles' ? 'page' : undefined}>Principles</a>
-      </li>
-      <li>
         <a href="/whitepaper" aria-current={current === 'whitepaper' ? 'page' : undefined}>White Paper</a>
       </li>
       <li>
-        <a class="nav-cta" href="/sign" aria-current={current === 'sign' ? 'page' : undefined}>Sign</a>
+        <a href="/principles" aria-current={current === 'principles' ? 'page' : undefined}>Principles</a>
+      </li>
+      <li>
+        <a href="/predictions" aria-current={current === 'predictions' ? 'page' : undefined}>Predictions</a>
+      </li>
+      <li>
+        <a class="nav-cta" href="/endorse" aria-current={current === 'endorse' ? 'page' : undefined}>Endorse</a>
       </li>
     </ul>
   </nav>

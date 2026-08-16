@@ -1,15 +1,15 @@
 ---
 // Protected by src/middleware.ts (HTTP Basic Auth) for any /admin/* path.
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { listPendingSignatures, listAllSignaturesForAdmin } from '../../lib/db';
+import { listPendingSignatures, listAllSignaturesForAdmin, parseParticipantTypes } from '../../lib/db';
 
 const pending = listPendingSignatures();
 const recent = listAllSignaturesForAdmin().slice(0, 40);
 ---
 
-<BaseLayout title="Admin — Signatures" description="Signature moderation queue.">
+<BaseLayout title="Admin — Endorsements" description="Endorsement moderation queue.">
   <div class="reading-column">
-    <h1>Signature moderation</h1>
+    <h1>Endorsement moderation</h1>
 
     <h2>Pending ({pending.length})</h2>
     {pending.length === 0 && <p>Nothing waiting for review.</p>}
@@ -19,7 +19,12 @@ const recent = listAllSignaturesForAdmin().slice(0, 40);
           <li class="ledger-item">
             <div>
               <div class="ledger-name">
-                {sig.name} <span class="ledger-type">{sig.participant_type}</span>
+                {sig.name}{' '}
+                <span class="ledger-types">
+                  {parseParticipantTypes(sig.participant_type).map((t) => (
+                    <span class="ledger-type">{t}</span>
+                  ))}
+                </span>
               </div>
               <div class="ledger-meta">
                 v{sig.principles_version} · {sig.created_at}
@@ -58,7 +63,11 @@ const recent = listAllSignaturesForAdmin().slice(0, 40);
                 {sig.status} · v{sig.principles_version} · {sig.created_at}
               </div>
             </div>
-            <span class="ledger-type">{sig.participant_type}</span>
+            <span class="ledger-types">
+              {parseParticipantTypes(sig.participant_type).map((t) => (
+                <span class="ledger-type">{t}</span>
+              ))}
+            </span>
           </li>
         ))
       }

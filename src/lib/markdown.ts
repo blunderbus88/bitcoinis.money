@@ -16,6 +16,23 @@ export function renderMarkdown(source: string): string {
   return md.render(source);
 }
 
+/**
+ * Strips the Markdown syntax used in Principles.md (ATX headers, emphasis,
+ * links) so the source reads as plain prose — e.g. for prefilling a tweet
+ * with the document's actual text rather than its markup.
+ */
+export function markdownToPlainText(source: string): string {
+  return source
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '$1')
+    .replace(/(?<!_)_([^_]+)_(?!_)/g, '$1')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export type AnnotationDictionary = Record<string, string>;
 
 /**
@@ -23,9 +40,8 @@ export type AnnotationDictionary = Record<string, string>;
  *
  * Matching terms in body text are wrapped in
  *   <span class="term" data-term="…" tabindex="0">text</span>
- * CSS (gated on the Beginner Mode toggle) handles the dotted underline and
- * hover/focus tooltip — see src/styles/global.css. No JS is required for
- * the tooltip itself.
+ * CSS handles the dotted underline and hover/focus tooltip — see
+ * src/styles/global.css. No JS is required for the tooltip itself.
  */
 export function renderMarkdownWithAnnotations(source: string, annotations: AnnotationDictionary): string {
   const terms = Object.keys(annotations)
