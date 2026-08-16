@@ -6,17 +6,6 @@ import { turnstileSiteKey } from '../lib/turnstile';
 
 const doc = getCurrentPrinciples();
 const siteKey = turnstileSiteKey();
-
-const errorCode = Astro.url.searchParams.get('error');
-const submitted = Astro.url.searchParams.get('submitted') === '1';
-
-const ERROR_MESSAGES: Record<string, string> = {
-  validation: 'Please check the highlighted fields and try again.',
-  challenge: 'The anti-spam challenge could not be verified. Please try again.',
-  rate_limited: 'Too many submissions from this connection recently. Please try again later.',
-  version: 'The Principles were updated while you were filling this out. Please reload and endorse the current version.',
-  unknown: 'Something went wrong submitting your endorsement. Please try again.',
-};
 ---
 
 <BaseLayout
@@ -37,14 +26,12 @@ const ERROR_MESSAGES: Record<string, string> = {
       <p class="form-error">No version of the Principles has been published yet, so endorsing isn't open.</p>
     )}
 
-    {submitted && (
-      <p class="form-success">
-        Thank you — your endorsement has been recorded and is pending review. Approved endorsements appear on the
-        <a href="/endorsements">endorsement ledger</a>.
-      </p>
-    )}
+    <p class="form-success" id="flash-submitted" hidden>
+      Thank you — your endorsement has been recorded and is pending review. Approved endorsements appear on the
+      <a href="/endorsements">endorsement ledger</a>.
+    </p>
 
-    {errorCode && <p class="form-error">{ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.unknown}</p>}
+    <p class="form-error" id="flash-error" hidden></p>
 
     {doc && (
       <form method="POST" action="/api/endorse" class="form-grid">
@@ -61,7 +48,7 @@ const ERROR_MESSAGES: Record<string, string> = {
             <legend>Participant type <span class="hint">(select all that apply)</span></legend>
             {PARTICIPANT_TYPES.map((t) => (
               <label class="checkbox-option">
-                <input type="checkbox" name="participant_type" value={t} />
+                <input type="checkbox" name="participant_type[]" value={t} />
                 {t}
               </label>
             ))}
@@ -99,6 +86,14 @@ const ERROR_MESSAGES: Record<string, string> = {
           <input type="text" id="nostr" name="nostr" placeholder="npub1…" maxlength="120" />
         </div>
 
+        <div class="form-field">
+          <label for="comment">
+            Which Principle matters most to you and why? <span class="hint">(optional)</span>
+          </label>
+          <textarea id="comment" name="comment" maxlength="280" rows="3"></textarea>
+          <span class="char-count" data-char-count-for="comment">280 characters remaining</span>
+        </div>
+
         {siteKey && (
           <div class="form-field">
             <div class="cf-turnstile" data-sitekey={siteKey}></div>
@@ -113,4 +108,46 @@ const ERROR_MESSAGES: Record<string, string> = {
   </div>
 
   {siteKey && <script is:inline async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>}
+
+  <script>
+    // This page is fully static (Astro output: 'static'), so /api/endorse's
+    // 303 redirect back here with ?submitted=1 / ?error=... can only be
+    // read client-side — there's no per-request server render to do it for us.
+    const ERROR_MESSAGES: Record<string, string> = {
+      validation: 'Please check the highlighted fields and try again.',
+      challenge: 'The anti-spam challenge could not be verified. Please try again.',
+      rate_limited: 'Too many submissions from this connection recently. Please try again later.',
+      version:
+        'The Principles were updated while you were filling this out. Please reload and endorse the current version.',
+      unknown: 'Something went wrong submitting your endorsement. Please try again.',
+    };
+
+    const params = new URLSearchParams(location.search);
+
+    if (params.get('submitted') === '1') {
+      document.getElementById('flash-submitted')?.removeAttribute('hidden');
+    }
+
+    const errorCode = params.get('error');
+    if (errorCode) {
+      const el = document.getElementById('flash-error');
+      if (el) {
+        el.textContent = ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.unknown;
+        el.removeAttribute('hidden');
+      }
+    }
+  </script>
+
+  <script>
+    document.querySelectorAll<HTMLTextAreaElement>('textarea[maxlength]').forEach((field) => {
+      const counter = document.querySelector(`[data-char-count-for="${field.id}"]`);
+      if (!counter) return;
+      const max = Number(field.getAttribute('maxlength'));
+      const update = () => {
+        counter.textContent = `${max - field.value.length} characters remaining`;
+      };
+      field.addEventListener('input', update);
+      update();
+    });
+  </script>
 </BaseLayout>

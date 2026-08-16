@@ -1,0 +1,28 @@
+RewriteEngine On
+
+# Deny direct access to PHP internals — only the entry scripts below (and
+# their rewrite targets) are meant to be reachable.
+RewriteRule ^php/lib/ - [F,L]
+
+# Preserve the site's existing URL scheme: these routes used to be handled
+# by Astro server endpoints / pages; now they're plain PHP files under
+# php/, reached through the same paths so nothing else in the site (forms,
+# links, docs) needed to change.
+RewriteRule ^api/endorse/?$ php/endorse.php [L]
+RewriteRule ^api/admin/moderate/?$ php/admin/moderate.php [L]
+RewriteRule ^api/admin/edit/?$ php/admin/edit-submit.php [L]
+RewriteRule ^api/admin/delete/?$ php/admin/delete.php [L]
+RewriteRule ^api/endorsements/?$ php/endorsements.php [L]
+RewriteRule ^admin/endorsements/([0-9]+)/?$ php/admin/edit.php?id=$1 [L,QSA]
+RewriteRule ^admin/endorsements/?$ php/admin/endorsements.php [L]
+
+# Same security headers src/middleware.ts used to set on every response.
+# Applies to static files and PHP responses alike (mod_headers operates on
+# the outgoing HTTP response regardless of origin).
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'"
+</IfModule>

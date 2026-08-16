@@ -8,6 +8,11 @@ dist/
 # environment
 .env
 .env.local
+/config.php
+/.htpasswd
+
+# generated at build time (see npm run build) — src/styles/global.css is the source
+/public/global.css
 
 # database (runtime data, not source)
 database/*.db

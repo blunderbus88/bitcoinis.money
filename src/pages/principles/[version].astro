@@ -1,8 +1,14 @@
 ---
+import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PrinciplesDocument from '../../components/PrinciplesDocument.astro';
-import { getPrinciplesVersion, isCurrentVersion } from '../../lib/principles';
+import { getPrinciplesVersion, isCurrentVersion, listVersions } from '../../lib/principles';
 import { validateVersion } from '../../lib/validation';
+
+// Static output needs every version's path known at build time — there's
+// no per-request server left to resolve arbitrary :version values.
+export const getStaticPaths: GetStaticPaths = () =>
+  listVersions().map((v) => ({ params: { version: v.version } }));
 
 const versionParam = validateVersion(Astro.params.version);
 if (!versionParam) {

@@ -1,0 +1,33 @@
+<?php
+// Copy this file to config.php (repo root, next to this file) and fill in
+// real values. Never commit config.php.
+//
+// config.php lives outside the web docroot (dist/) on purpose — PHP
+// scripts under public/php/ (built into dist/php/) reach up to it via
+// public/php/lib/config.php, so it's never web-reachable regardless of
+// .htaccess rules.
+//
+// Admin credentials are NOT set here — they live in an .htpasswd file
+// (Apache Basic Auth on dist/php/admin/), generated once during setup.
+// See deploy/SITEGROUND_DEPLOY.md.
+
+return [
+    // Path to the SQLite database file (signatures only — Principles
+    // content lives in Principles.md / content/, not the database).
+    'database_path' => __DIR__ . '/database/signatures.db',
+
+    // Random string used to salt hashed IP addresses stored for
+    // rate-limiting. Generate with: openssl rand -hex 32
+    'ip_hash_salt' => 'change-me-to-a-random-value',
+
+    // Cloudflare Turnstile secret key (verification only) —
+    // https://developers.cloudflare.com/turnstile/. The site key is public
+    // and lives in .env / TURNSTILE_SITE_KEY instead (embedded at build
+    // time in the static /endorse page). If left empty, verification is
+    // skipped (development only — logs a warning). Must be set in production.
+    'turnstile_secret_key' => '',
+
+    // Canonical public URL. Used to validate Origin/Referer on POST
+    // requests (CSRF defense) — must match SITE_URL in .env.
+    'site_url' => 'https://bitcoinis.money',
+];

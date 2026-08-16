@@ -138,5 +138,6 @@ export function validateVersion(input: unknown): string | null {
 
 export function validateHash(input: unknown): string | null {
   if (typeof input !== 'string') return null;
-  return /^[a-f0-9]{64}$/i.test(input) ? input.toLowerCase() : null;
+  // BLAKE2b-512 hex digest (scripts/release-principles.mjs: createHash('blake2b512')) — 128 hex chars.
+  return /^[a-f0-9]{128}$/i.test(input) ? input.toLowerCase() : null;
 }

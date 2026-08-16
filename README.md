@@ -21,15 +21,19 @@ independently, and see who voluntarily endorsed that exact text.
 
 ## Architecture
 
-Astro (server output) + SQLite + Markdown-as-content. No CMS, no build-time
-content baking — the site reads its archived Markdown snapshot from disk on
-every request, so publishing a new version is a matter of running a script,
-not redeploying application code.
+Astro (**static output**) for content, plain PHP for the handful of
+genuinely dynamic pieces (signature submission + admin moderation), SQLite
+for the signature ledger, Markdown-as-content for everything else. No CMS —
+the Git repository *is* the content-management system for the Principles.
+Content pages are prerendered at build time, which is safe here because
+content only ever changes via a script + commit + redeploy, never live
+in-place edits.
 
 ```
 /
 ├── Principles.md                  # gitignored staging file for release-principles.mjs (not read by the site)
 ├── WhitePaper.md                  # Bitcoin white paper (Markdown transcription)
+├── config.php.example             # template for config.php (PHP runtime secrets — gitignored)
 ├── content/
 │   ├── annotations.json           # Beginner Mode term dictionary
 │   ├── principles-meta.json       # version/hash/date records, points at the current archive file
@@ -37,34 +41,44 @@ not redeploying application code.
 ├── database/
 │   └── schema.sql                 # signatures table only — never Principles content
 ├── public/
-│   └── whitepaper/*.svg           # white paper diagrams, self-hosted
+│   ├── .htaccess                  # rewrites (preserves /api/*, /endorsements, /admin/* URLs) + security headers
+│   ├── whitepaper/*.svg           # white paper diagrams, self-hosted
+│   └── php/                       # signature submission + admin moderation — see "How signatures are moderated"
 ├── scripts/
-│   ├── release-principles.mjs     # the only way to publish a new version
-│   └── init-db.mjs
+│   └── release-principles.mjs     # the only way to publish a new version
 ├── src/
 │   ├── components/, layouts/, pages/
-│   ├── lib/                       # principles.ts, whitepaper.ts, db.ts, validation.ts, ...
-│   └── middleware.ts              # admin auth + security headers
-└── docker/
+│   └── lib/                       # principles.ts, whitepaper.ts, markdown.ts, ...
+└── deploy/                        # SiteGround runbook + the post-merge deploy hook
 ```
 
 **Why this stack:** Astro renders the archived Principles snapshot and
-WhitePaper.md live from disk with minimal JavaScript shipped to the client
-(Beginner Mode's toggle and tooltips work via a pure CSS `:has()`
-checkbox-hack — no JS required for that feature at all). SQLite is enough
-for a signature ledger; there is no reason to reach for a bigger database
-for a single low-write-volume table. Nothing here needs a CMS: the Git
-repository *is* the content-management system for the Principles.
+WhitePaper.md from disk at build time with minimal JavaScript shipped to
+the client (Beginner Mode's toggle and tooltips work via a pure CSS
+`:has()` checkbox-hack — no JS required for that feature at all). SQLite is
+enough for a signature ledger; there is no reason to reach for a bigger
+database for a single low-write-volume table. Static output + PHP (rather
+than a Node server) is a hosting-environment constraint, not a preference —
+see [`deploy/SITEGROUND_DEPLOY.md`](deploy/SITEGROUND_DEPLOY.md).
 
 ## Local development
 
-Requires Node.js 22+.
+Requires Node.js 22+ and PHP 8.x.
 
 ```bash
 npm install
-cp .env.example .env        # fill in ADMIN_PASSWORD and IP_HASH_SALT at minimum
-npm run db:init              # creates database/signatures.db
+cp .env.example .env          # fill in SITE_URL if it differs from the default
+cp config.php.example config.php   # fill in ip_hash_salt, turnstile_* (optional locally)
 npm run dev
+```
+
+The Astro dev server (`http://localhost:4321`) covers everything except
+signature submission and admin moderation. To exercise those too, build
+once and serve the combined output with PHP's built-in server:
+
+```bash
+npm run build
+php -S localhost:8787 -t dist
 ```
 
 If `content/principles-meta.json` has no `current` version yet (e.g. a fresh
@@ -73,20 +87,25 @@ first (hand-written, or copied from
 [blunderbus88/Bitcoin](https://github.com/blunderbus88/Bitcoin)), then run
 `npm run release-principles -- --version 1.0` to publish it.
 
-The dev server runs at `http://localhost:4321`.
-
 ## Environment variables
 
-All configuration comes from the environment (`.env` locally, real secrets
-injected by your host in production). See `.env.example` for the full list:
+Two separate places, split by when they're needed:
 
-| Variable | Purpose |
-|---|---|
-| `SITE_URL` | Canonical URL used for share links / Open Graph tags |
-| `DATABASE_PATH` | Path to the SQLite signatures database |
-| `ADMIN_USER` / `ADMIN_PASSWORD` | HTTP Basic Auth for `/admin/*` |
-| `IP_HASH_SALT` | Salts the hashed IP used only for rate-limiting |
-| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile (spam prevention). If unset, verification is **skipped with a warning** — fine for local dev, required in production |
+- **`.env`** (build time only — read by Astro/Vite): see `.env.example`.
+  Just `SITE_URL`, the canonical URL used for share links / Open Graph tags.
+- **`config.php`** (runtime — read by `public/php/`): see
+  `config.php.example`.
+
+  | Key | Purpose |
+  |---|---|
+  | `database_path` | Path to the SQLite signatures database |
+  | `ip_hash_salt` | Salts the hashed IP used only for rate-limiting |
+  | `turnstile_site_key` / `turnstile_secret_key` | Cloudflare Turnstile (spam prevention). If unset, verification is **skipped with a warning** — fine for local dev, required in production |
+  | `site_url` | Used to validate `Origin`/`Referer` on POST requests (CSRF defense) — should match `.env`'s `SITE_URL` |
+
+Admin credentials are **not** in `config.php` — they're a real Apache Basic
+Auth `.htpasswd` file (bcrypt), generated once during deploy setup. See
+[`deploy/SITEGROUND_DEPLOY.md`](deploy/SITEGROUND_DEPLOY.md).
 
 ## How the Principles are rendered
 
@@ -153,15 +172,24 @@ committed — it's disposable input, not output.)
 
 ## How signatures are moderated
 
-Submissions (`POST /api/sign`) are validated and normalized server-side
-(`src/lib/validation.ts`), rate-limited by a salted IP hash
-(`src/lib/rateLimit.ts`), optionally checked against Cloudflare Turnstile,
-and inserted with `status = 'pending'`. They are **never** publicly visible
-until approved.
+This is the one part of the site that isn't static Astro output — it's a
+small set of PHP scripts under `public/php/` (built into `dist/php/`, and
+reached at their original URLs via rewrites in `public/.htaccess`, so
+nothing else in the site needed to change). Each function in
+`public/php/lib/` is a direct port of what used to be a `src/lib/*.ts`
+module before the SiteGround migration (see git history / `deploy/` for
+context) — same validation rules, same rate-limit window, same schema.
 
-`/admin/signatures` (protected by HTTP Basic Auth — see `ADMIN_USER` /
-`ADMIN_PASSWORD`) lists the pending queue with Approve/Reject buttons that
-post to `/api/admin/moderate`. Approved signatures appear on `/signatures`.
+Submissions (`POST /api/endorse` → `public/php/endorse.php`) are validated
+and normalized server-side (`public/php/lib/validation.php`), rate-limited
+by a salted IP hash (`public/php/lib/rateLimit.php`), optionally checked
+against Cloudflare Turnstile, and inserted with `status = 'pending'`. They
+are **never** publicly visible until approved.
+
+`/admin/endorsements` (real Apache Basic Auth — see
+`public/php/admin/.htaccess` and the deploy runbook) lists the pending
+queue with Approve/Reject buttons that post to `/api/admin/moderate`.
+Approved signatures appear on `/endorsements`.
 
 Every signature is permanently stored with the exact `principles_version`
 and `principles_hash` it was submitted against (bound at page-render time
@@ -178,50 +206,39 @@ that breaks existing rows. Not implemented in this release.
 ## Security notes
 
 - All signature-submission input is treated as hostile: validated,
-  length-bounded, and normalized in `src/lib/validation.ts` before it ever
-  reaches a SQL parameter (`better-sqlite3` prepared statements only — no
-  string-built SQL) or gets rendered back to a page (Astro escapes
-  `{expression}` output by default; nothing user-submitted is ever rendered
-  with `set:html`).
-- CSRF: Astro's `security.checkOrigin` (enabled in `astro.config.mjs`)
-  rejects cross-origin state-changing requests.
-- `/admin/*` and `/api/admin/*` are gated by HTTP Basic Auth in
-  `src/middleware.ts`, which also sets baseline security headers (CSP,
-  `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`,
-  `Permissions-Policy`) on every response.
+  length-bounded, and normalized in `public/php/lib/validation.php` before
+  it ever reaches a SQL parameter (PDO prepared statements only — no
+  string-built SQL) or gets echoed back into a page (`h()` in
+  `public/php/lib/layout.php` htmlspecialchars-escapes everything by
+  default).
+- CSRF: `public/php/lib/csrf.php` rejects state-changing POST requests
+  whose `Origin`/`Referer` doesn't match `config.php`'s `site_url` (ports
+  what Astro's `security.checkOrigin` used to do before this site was
+  static).
+- `/admin/*` and `/api/admin/*` are gated by real Apache Basic Auth
+  (`public/php/admin/.htaccess`, `AuthUserFile` pointing at an `.htpasswd`
+  kept outside the web docroot) — requests are rejected before any PHP in
+  that directory runs. Security headers (CSP, `X-Frame-Options`,
+  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) are set
+  in `public/.htaccess` on every response, static or PHP.
 - No Google Analytics, no tracking pixels, no third-party scripts except
-  Cloudflare Turnstile — and that only loads if `TURNSTILE_SITE_KEY` is set.
+  Cloudflare Turnstile — and that only loads if `turnstile_site_key` is set.
 
 ## Deployment
 
-Production runs on **SiteGround**, via Site Tools' Git tool (pulls from this
-repo's `main` branch) and Node.js App Manager (Phusion Passenger — runs the
-standalone server built by `npm run build`, no Docker or systemd involved).
-See [`deploy/SITEGROUND_DEPLOY.md`](deploy/SITEGROUND_DEPLOY.md) for the full
-runbook: one-time setup, the redeploy flow, and how to rebuild/restart
-manually.
+Production runs on **SiteGround** — Site Tools' Git tool pulls from this
+repo's `main` branch, and Apache + PHP Manager serve the result directly.
+There's no Node.js App Manager on this hosting plan, which is why the
+dynamic parts of the site are PHP rather than a Node server; see the
+Architecture section above and
+[`deploy/SITEGROUND_DEPLOY.md`](deploy/SITEGROUND_DEPLOY.md) for the full
+runbook (one-time setup, the redeploy flow, manual rebuilds).
 
-`npm run build` produces a standalone Node server at `dist/server/entry.mjs`
-(via `@astrojs/node` in `standalone` mode, which also serves the static
-assets in `dist/client/`) — it reads `process.env.PORT` / `process.env.HOST`
-at runtime, and path resolution for `content/` and the database assumes the
-process's working directory is the project root.
-
-### Docker (local / alternate hosting)
-
-```bash
-cd docker
-cp ../.env.example ../.env   # fill in real values
-docker compose up --build -d
-```
-
-The signatures database lives in a named volume (`signatures-db`) so it
-survives container rebuilds/redeploys. `WhitePaper.md`, `content/` (which
-includes `principles-meta.json` and `principles-archive/`), and the white
-paper diagrams are baked into the image at build time — to publish a new
-Principles version, run `npm run release-principles`, commit the result
-(`content/principles-meta.json` + the new archive file), and
-rebuild/redeploy the image.
+`npm run build` produces a static `dist/` (Astro's static output, plus
+`public/php/` and `public/.htaccess` copied in verbatim, plus a build-time
+sync of `src/styles/global.css` to `public/global.css` so the PHP-rendered
+pages can share the same stylesheet at a stable path) — this is what
+SiteGround's document root points at.
 
 ## Terminology note
 

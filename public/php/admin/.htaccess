@@ -1,0 +1,15 @@
+# Real Apache Basic Auth — blocks unauthenticated requests before any PHP
+# in this directory ever runs (the same "gate before the handler" guarantee
+# src/middleware.ts used to provide). Covers /admin/endorsements,
+# /admin/endorsements/{id}, and /api/admin/* (all rewritten into this
+# directory by ../../.htaccess).
+#
+# {{REPO_ROOT}} is substituted with the real absolute path by
+# deploy/hooks/post-merge on every deploy — AuthUserFile needs an absolute
+# path and this repo's checkout location varies by environment. Left as a
+# literal placeholder here (harmless no-op) if this .htaccess is ever served
+# without going through that hook, e.g. `astro build` run standalone.
+AuthType Basic
+AuthName "BitcoinIs.Money admin"
+AuthUserFile {{REPO_ROOT}}/.htpasswd
+Require valid-user

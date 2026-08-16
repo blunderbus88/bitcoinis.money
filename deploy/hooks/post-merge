@@ -8,11 +8,17 @@
 #   chmod +x .git/hooks/post-merge deploy/hooks/post-merge
 set -e
 cd "$(dirname "$0")/../.."
+REPO_ROOT="$(pwd)"
 
 npm ci
 npm run build
 
-# Phusion Passenger (SiteGround's Node.js App Manager) restarts the app when
-# this file's mtime changes -- no systemctl/sudo available on this account.
-mkdir -p tmp
-touch tmp/restart.txt
+# public/php/admin/.htaccess ships with a {{REPO_ROOT}} placeholder (Apache's
+# AuthUserFile needs an absolute path, and this repo's checkout location
+# varies by environment) — substitute the real path into the built copy on
+# every deploy, since dist/ is regenerated from scratch each time.
+sed -i "s#{{REPO_ROOT}}#${REPO_ROOT}#g" dist/php/admin/.htaccess
+
+# Static files + PHP are served directly by Apache/PHP-FPM — no process to
+# restart (this account has no Node.js App Manager / Passenger; see
+# deploy/SITEGROUND_DEPLOY.md).

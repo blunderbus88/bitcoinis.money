@@ -1,6 +1,11 @@
-import type { APIRoute } from 'astro';
-import { getPrinciplesVersion } from '../../lib/principles';
+import type { APIRoute, GetStaticPaths } from 'astro';
+import { getPrinciplesVersion, listVersions } from '../../lib/principles';
 import { validateVersion } from '../../lib/validation';
+
+// Static output needs every version's path known at build time — there's
+// no per-request server left to resolve arbitrary :version values.
+export const getStaticPaths: GetStaticPaths = () =>
+  listVersions().map((v) => ({ params: { version: v.version } }));
 
 export const GET: APIRoute = ({ params }) => {
   const version = validateVersion(params.version);

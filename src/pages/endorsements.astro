@@ -1,9 +1,11 @@
 ---
+// This page is static output — the live signature list is fetched
+// client-side from /api/endorsements (public/php/endorsements.php), since
+// this site has no per-request server to render it directly (see
+// deploy/SITEGROUND_DEPLOY.md). Rendering itself lives in
+// src/lib/renderLedger.client.ts, shared with the inline endorsements
+// widget on the Principles page.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { listApprovedSignatures, countApprovedSignatures, parseParticipantTypes } from '../lib/db';
-
-const signatures = listApprovedSignatures();
-const total = countApprovedSignatures();
 ---
 
 <BaseLayout
@@ -17,58 +19,24 @@ const total = countApprovedSignatures();
       Principles version its endorser affirmed.
     </p>
 
-    <p class="ledger-count">{total} endorsement{total === 1 ? '' : 's'}</p>
+    <p class="ledger-count" id="ledger-count">Loading…</p>
 
-    {signatures.length === 0 && <p>No approved endorsements yet.</p>}
+    <p id="ledger-empty" hidden>No approved endorsements yet.</p>
 
-    <ul class="ledger-list">
-      {
-        signatures.map((sig) => (
-          <li class="ledger-item">
-            <div>
-              <div class="ledger-name">{sig.name}</div>
-              <div class="ledger-meta">
-                v{sig.principles_version} ·{' '}
-                {new Date(sig.moderated_at ?? sig.created_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-                {sig.website && (
-                  <>
-                    {' · '}
-                    <a href={sig.website} rel="noopener nofollow">
-                      website
-                    </a>
-                  </>
-                )}
-                {sig.github && (
-                  <>
-                    {' · '}
-                    <a href={sig.github} rel="noopener nofollow">
-                      GitHub
-                    </a>
-                  </>
-                )}
-                {sig.x_profile && (
-                  <>
-                    {' · '}
-                    <a href={sig.x_profile} rel="noopener nofollow">
-                      X
-                    </a>
-                  </>
-                )}
-              </div>
-              {sig.comment && <div class="ledger-comment">“{sig.comment}”</div>}
-            </div>
-            <span class="ledger-types">
-              {parseParticipantTypes(sig.participant_type).map((t) => (
-                <span class="ledger-type">{t}</span>
-              ))}
-            </span>
-          </li>
-        ))
-      }
-    </ul>
+    <ul class="ledger-list" id="ledger-list"></ul>
   </div>
+
+  <script>
+    import { loadLedger } from '../lib/renderLedger.client';
+
+    const listEl = document.getElementById('ledger-list');
+    const countEl = document.getElementById('ledger-count');
+    const emptyEl = document.getElementById('ledger-empty');
+    if (listEl && countEl) {
+      loadLedger(listEl, (total) => {
+        countEl.textContent = `${total} endorsement${total === 1 ? '' : 's'}`;
+        if (total === 0) emptyEl?.removeAttribute('hidden');
+      });
+    }
+  </script>
 </BaseLayout>
