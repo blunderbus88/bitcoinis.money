@@ -49,7 +49,7 @@ in-place edits.
 ├── src/
 │   ├── components/, layouts/, pages/
 │   └── lib/                       # principles.ts, whitepaper.ts, markdown.ts, ...
-└── deploy/                        # SiteGround runbook + the post-merge deploy hook
+└── deploy/                        # SiteGround runbook (build happens in CI, not on the server)
 ```
 
 **Why this stack:** Astro renders the archived Principles snapshot and
@@ -226,13 +226,15 @@ that breaks existing rows. Not implemented in this release.
 
 ## Deployment
 
-Production runs on **SiteGround** — Site Tools' Git tool pulls from this
-repo's `main` branch, and Apache + PHP Manager serve the result directly.
-There's no Node.js App Manager on this hosting plan, which is why the
-dynamic parts of the site are PHP rather than a Node server; see the
-Architecture section above and
-[`deploy/SITEGROUND_DEPLOY.md`](deploy/SITEGROUND_DEPLOY.md) for the full
-runbook (one-time setup, the redeploy flow, manual rebuilds).
+Production runs on **SiteGround** — Apache + PHP Manager serve the result
+directly. There's no Node.js App Manager on this hosting plan, which is why
+the dynamic parts of the site are PHP rather than a Node server. The build
+itself doesn't run on SiteGround either — this account's memory ceiling is
+too low for Astro's (always-WebAssembly) compiler — so **GitHub Actions
+builds `dist/` on every push to `main` and pushes it to the server over
+SSH** (`.github/workflows/deploy.yml`). See the Architecture section above
+and [`deploy/SITEGROUND_DEPLOY.md`](deploy/SITEGROUND_DEPLOY.md) for the
+full runbook (one-time setup, the redeploy flow, manual rebuilds).
 
 `npm run build` produces a static `dist/` (Astro's static output, plus
 `public/php/` and `public/.htaccess` copied in verbatim, plus a build-time

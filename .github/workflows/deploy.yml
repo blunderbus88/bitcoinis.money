@@ -1,0 +1,56 @@
+name: Deploy to SiteGround
+
+# The SiteGround account hosting bitcoinis.money is memory-constrained enough
+# that Astro's compiler (always WebAssembly-based, not just a fallback) fails
+# with a WASM out-of-memory error when `npm run build` runs there directly —
+# confirmed live. So the build happens here in CI instead, and only the
+# finished dist/ output is pushed to the server. config.php and the SQLite
+# database live outside dist/ on the server and are never touched by this
+# workflow.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          SITE_URL: https://bitcoinis.money
+          TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+        run: npm run build
+
+      - name: Bake server path into admin .htaccess
+        run: |
+          sed -i "s#{{REPO_ROOT}}#${{ secrets.SITEGROUND_REPO_PATH }}#g" dist/php/admin/.htaccess
+
+      - name: Deploy dist/ over SSH
+        env:
+          SSH_KEY: ${{ secrets.SITEGROUND_SSH_KEY }}
+          HOST: ${{ secrets.SITEGROUND_HOST }}
+          PORT: ${{ secrets.SITEGROUND_PORT }}
+          USERNAME: ${{ secrets.SITEGROUND_USER }}
+          REPO_PATH: ${{ secrets.SITEGROUND_REPO_PATH }}
+        run: |
+          install -m 600 /dev/null /tmp/deploy_key
+          printf '%s\n' "$SSH_KEY" > /tmp/deploy_key
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "$PORT" "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          rsync -avz --delete \
+            -e "ssh -i /tmp/deploy_key -o IdentitiesOnly=yes -p $PORT" \
+            dist/ "$USERNAME@$HOST:$REPO_PATH/dist/"
+
+          rm -f /tmp/deploy_key
