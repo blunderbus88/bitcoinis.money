@@ -69,18 +69,29 @@ const ERROR_MESSAGES: Record<string, string> = {
         </div>
 
         <div class="form-field">
-          <label for="website">Website <span class="hint">(optional)</span></label>
-          <input type="url" id="website" name="website" placeholder="https://" maxlength="300" />
-        </div>
-
-        <div class="form-field">
           <label for="github">GitHub <span class="hint">(optional — username or profile URL)</span></label>
-          <input type="text" id="github" name="github" placeholder="satoshi" maxlength="120" />
+          <input
+            type="text"
+            id="github"
+            name="github"
+            placeholder="satoshi"
+            maxlength="120"
+            pattern="^(@?[A-Za-z0-9-]{1,39}|https?://(www\.)?github\.com/.+)$"
+            title="Enter a GitHub username (e.g. satoshi) or a github.com profile URL"
+          />
         </div>
 
         <div class="form-field">
           <label for="x_profile">X <span class="hint">(optional — @handle or profile URL)</span></label>
-          <input type="text" id="x_profile" name="x_profile" placeholder="@handle" maxlength="120" />
+          <input
+            type="text"
+            id="x_profile"
+            name="x_profile"
+            placeholder="@handle"
+            maxlength="120"
+            pattern="^(@?[A-Za-z0-9_]{1,15}|https?://(www\.)?(x\.com|twitter\.com)/.+)$"
+            title="Enter an X/Twitter handle (e.g. @satoshi) or an x.com/twitter.com profile URL"
+          />
         </div>
 
         <div class="form-field">
