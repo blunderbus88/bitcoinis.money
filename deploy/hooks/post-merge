@@ -1,0 +1,18 @@
+#!/bin/sh
+# Runs after every `git pull` in this repo on the SiteGround server (Site
+# Tools' Git tool does a plain pull into a working copy, so a standard git
+# hook is the right place to build). Not executed anywhere else.
+#
+# Install once, after Site Tools' Git tool has done its first clone:
+#   ln -sf ../../deploy/hooks/post-merge .git/hooks/post-merge
+#   chmod +x .git/hooks/post-merge deploy/hooks/post-merge
+set -e
+cd "$(dirname "$0")/../.."
+
+npm ci
+npm run build
+
+# Phusion Passenger (SiteGround's Node.js App Manager) restarts the app when
+# this file's mtime changes -- no systemctl/sudo available on this account.
+mkdir -p tmp
+touch tmp/restart.txt

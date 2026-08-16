@@ -194,6 +194,21 @@ that breaks existing rows. Not implemented in this release.
 
 ## Deployment
 
+Production runs on **SiteGround**, via Site Tools' Git tool (pulls from this
+repo's `main` branch) and Node.js App Manager (Phusion Passenger — runs the
+standalone server built by `npm run build`, no Docker or systemd involved).
+See [`deploy/SITEGROUND_DEPLOY.md`](deploy/SITEGROUND_DEPLOY.md) for the full
+runbook: one-time setup, the redeploy flow, and how to rebuild/restart
+manually.
+
+`npm run build` produces a standalone Node server at `dist/server/entry.mjs`
+(via `@astrojs/node` in `standalone` mode, which also serves the static
+assets in `dist/client/`) — it reads `process.env.PORT` / `process.env.HOST`
+at runtime, and path resolution for `content/` and the database assumes the
+process's working directory is the project root.
+
+### Docker (local / alternate hosting)
+
 ```bash
 cd docker
 cp ../.env.example ../.env   # fill in real values
@@ -207,13 +222,6 @@ paper diagrams are baked into the image at build time — to publish a new
 Principles version, run `npm run release-principles`, commit the result
 (`content/principles-meta.json` + the new archive file), and
 rebuild/redeploy the image.
-
-Without Docker: `npm run build` produces a standalone Node server at
-`dist/server/entry.mjs` (via `@astrojs/node` in `standalone` mode, which
-also serves the static assets in `dist/client/`). Run it with `node
-dist/server/entry.mjs` from the project root — path resolution for
-`content/` and the database assumes the process's working directory is the
-project root, matching every deployment method described here.
 
 ## Terminology note
 
