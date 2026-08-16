@@ -7,7 +7,6 @@ import { getPredictions } from '../../lib/predictions';
 const doc = getPredictions();
 const siteUrl = import.meta.env.SITE_URL || 'https://bitcoinis.money';
 const canonicalUrl = new URL('/predictions', siteUrl).toString();
-const sourceUrl = 'https://github.com/blunderbus88/Bitcoin/blob/main/Predictions.md';
 
 const shareTextBrief = `A record for the future: our concerns about what will happen to BTC-SHA256, documented at the founding of BTC-BLAKE2b.
 
@@ -35,8 +34,6 @@ const shareTextFull = doc.predictions
     canonicalUrl={canonicalUrl}
     shareTextFull={shareTextFull}
     shareTextBrief={shareTextBrief}
-    sourceUrl={sourceUrl}
-    sourceLabel="View source & history on GitHub"
   />
 
   <article class="reading-column predictions-body">
