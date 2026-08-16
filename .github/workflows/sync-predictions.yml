@@ -1,0 +1,55 @@
+name: Sync Predictions.md
+
+# Predictions.md is authored upstream at blunderbus88/Bitcoin (Predictions.md
+# on main). This workflow fetches it and overwrites the committed
+# Predictions.md in this repo, which src/lib/predictions.ts reads directly.
+#
+# Unlike Principles.md there is no archive/versioning step here: a
+# prediction's wording is never edited after publication (corrections are
+# appended as dated "Updates" instead), so Predictions.md stays the single
+# canonical copy and GitHub's own commit history is the provenance record.
+# See src/lib/predictions.ts for the fuller rationale.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # every 10 minutes
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch and normalize canonical Predictions.md
+        run: |
+          curl -fsSL \
+            "https://raw.githubusercontent.com/blunderbus88/Bitcoin/main/Predictions.md" \
+            -o /tmp/source-predictions.md
+
+          # Strip trailing whitespace and collapse trailing blank lines so
+          # formatting-only noise from the source repo doesn't trigger a commit.
+          sed -e 's/[ \t]*$//' /tmp/source-predictions.md > /tmp/trimmed.md
+          printf '%s\n' "$(cat /tmp/trimmed.md)" > Predictions.md
+
+      - name: Record metadata for any new predictions
+        run: node scripts/sync-predictions-meta.mjs
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet -- Predictions.md content/predictions-meta.json; then
+            echo "No content change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Predictions.md content/predictions-meta.json
+          git commit -m "sync: update Predictions.md from blunderbus88/Bitcoin@main"
+          git push

@@ -1,15 +1,22 @@
 // Predictions.md is the single canonical copy of this content — same pattern
-// as WhitePaper.md. Unlike Principles.md there is no archive/versioning
-// system: a prediction's original wording is never edited after publication
-// (corrections are appended as dated "Updates" instead), so GitHub's own
-// commit history is the provenance record. See Predictions.md's own intro
-// and the repo README for the "we should be able to be wrong" rationale.
+// as WhitePaper.md. It is authored upstream at blunderbus88/Bitcoin (which
+// carries no per-entry metadata) and kept in sync here by
+// .github/workflows/sync-predictions.yml. publishedAt/status for each
+// prediction therefore live separately, in content/predictions-meta.json,
+// keyed by prediction number — see that file's _readme and
+// scripts/sync-predictions-meta.mjs. Unlike Principles.md there is no
+// archive/versioning system for the prose itself: a prediction's original
+// wording is never edited after publication (corrections are appended as
+// dated "Updates" instead), so GitHub's own commit history is the
+// provenance record. See Predictions.md's own intro and the repo README for
+// the "we should be able to be wrong" rationale.
 
 import { readFileSync } from 'node:fs';
 import { renderMarkdown, markdownToPlainText } from './markdown';
 import { PROJECT_ROOT } from './projectRoot';
 
 const PREDICTIONS_PATH = `${PROJECT_ROOT}/Predictions.md`;
+const PREDICTIONS_META_PATH = `${PROJECT_ROOT}/content/predictions-meta.json`;
 
 export type PredictionStatus = 'open' | 'partially-fulfilled' | 'fulfilled' | 'not-fulfilled';
 
@@ -46,13 +53,14 @@ function slugify(title: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-function readMetaComment(section: string, key: string): string | null {
-  const match = section.match(new RegExp(`<!--\\s*${key}:\\s*(.+?)\\s*-->`));
-  return match ? match[1].trim() : null;
+interface PredictionMetaEntry {
+  publishedAt: string;
+  status: PredictionStatus;
 }
 
-function stripMetaComments(section: string): string {
-  return section.replace(/<!--\s*(published|status):.+?-->\n?/g, '');
+function readPredictionsMeta(): Record<string, PredictionMetaEntry> {
+  const { _readme, ...entries } = JSON.parse(readFileSync(PREDICTIONS_META_PATH, 'utf-8'));
+  return entries;
 }
 
 export function getPredictionsMarkdown(): string {
@@ -61,6 +69,7 @@ export function getPredictionsMarkdown(): string {
 
 export function getPredictions(): PredictionsDocument {
   const source = getPredictionsMarkdown();
+  const meta = readPredictionsMeta();
 
   // The file opens with an H1 + intro prose, then one H2 section per
   // prediction. Split on H2 boundaries to isolate each prediction's text.
@@ -77,15 +86,15 @@ export function getPredictions(): PredictionsDocument {
     const rest = raw.slice(headingMatch[0].length);
 
     const [beforeUpdates, updatesSource] = rest.split(/\n### Updates\n/);
+    const body = beforeUpdates.trim();
 
-    const publishedAt = readMetaComment(beforeUpdates, 'published');
-    const statusRaw = readMetaComment(beforeUpdates, 'status');
-    if (!publishedAt || !statusRaw) {
-      throw new Error(`Predictions.md: prediction ${numberStr} is missing published/status metadata`);
+    const entryMeta = meta[numberStr];
+    if (!entryMeta) {
+      throw new Error(
+        `content/predictions-meta.json: no entry for prediction ${numberStr} — run scripts/sync-predictions-meta.mjs`
+      );
     }
-    const status = statusRaw as PredictionStatus;
-
-    const body = stripMetaComments(beforeUpdates).trim();
+    const { publishedAt, status } = entryMeta;
 
     return {
       number: Number(numberStr),
@@ -93,7 +102,7 @@ export function getPredictions(): PredictionsDocument {
       title,
       publishedAt,
       status,
-      statusLabel: STATUS_LABELS[status] ?? statusRaw,
+      statusLabel: STATUS_LABELS[status] ?? status,
       bodyHtml: renderMarkdown(body),
       bodyPlainText: markdownToPlainText(body),
       updatesHtml: updatesSource ? renderMarkdown(updatesSource.trim()) : null,
