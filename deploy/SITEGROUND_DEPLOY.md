@@ -27,6 +27,12 @@ database, and `.htpasswd` all live one level up, in what these docs call the
 **app root** (`public_html`'s parent) — outside the web-servable tree, and
 untouched by every deploy's `rsync --delete`.
 
+`content/` (specifically `content/principles-meta.json`, which
+`public/php/lib/principles.php` reads at request time to re-verify a
+submission's version/hash server-side) is source content, not part of
+`dist/` — CI syncs it into the app root separately, alongside the
+`public_html/` sync.
+
 ## One-time setup
 
 ### 1. Confirm the website exists in Site Tools

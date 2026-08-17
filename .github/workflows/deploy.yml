@@ -12,6 +12,11 @@ name: Deploy to SiteGround
 # subdirectory. config.php and the SQLite database live one level up, in
 # SITEGROUND_APP_ROOT (public_html's parent), so they're outside the
 # web-servable tree and untouched by every deploy's rsync.
+#
+# public/php/lib/principles.php reads content/principles-meta.json at
+# request time (to re-verify a submission's version/hash server-side —
+# never trust what the form posts) — that's source content, not part of
+# dist/, so it's synced separately into the app root below.
 
 on:
   push:
@@ -61,5 +66,9 @@ jobs:
             --exclude=.well-known --exclude=cgi-bin \
             -e "ssh -i /tmp/deploy_key -o IdentitiesOnly=yes -p $PORT" \
             dist/ "$USERNAME@$HOST:$APP_ROOT/public_html/"
+
+          rsync -avz --delete \
+            -e "ssh -i /tmp/deploy_key -o IdentitiesOnly=yes -p $PORT" \
+            content/ "$USERNAME@$HOST:$APP_ROOT/content/"
 
           rm -f /tmp/deploy_key
