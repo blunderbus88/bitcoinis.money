@@ -28,7 +28,7 @@ function layout_open(string $title, string $description, ?string $current = null
     <meta property="og:type" content="website" />
     <meta property="og:url" content="<?= h($canonical) ?>" />
     <meta name="twitter:card" content="summary" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" />
     <link rel="stylesheet" href="/global.css" />
   </head>
   <body>
