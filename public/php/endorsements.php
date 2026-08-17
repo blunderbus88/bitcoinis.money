@@ -28,5 +28,6 @@ echo json_encode([
         'comment' => $sig['comment'],
         'principlesVersion' => $sig['principles_version'],
         'date' => $sig['moderated_at'] ?? $sig['created_at'],
+        'isFoundingSignatory' => is_founding_signatory($sig['created_at']),
     ], $signatures),
 ]);

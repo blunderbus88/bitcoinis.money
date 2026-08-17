@@ -31,6 +31,22 @@ function db_parse_participant_types(string $raw): array {
     return array_values(array_filter(array_map('trim', explode(',', $raw)), fn($s) => $s !== ''));
 }
 
+// The hard fork cutoff, in the same UTC ISO-8601 format `created_at` is
+// stored in (see db_insert_signature's 'now' default and rateLimit.php's
+// gmdate calls) — comparable directly against created_at as plain strings,
+// no timezone parsing involved on either side.
+const FOUNDING_SIGNATORY_CUTOFF = '2026-09-01T00:00:00.000Z';
+
+/**
+ * Derived purely from the server-set created_at (never moderated_at, and
+ * never anything the submitter can influence) — there is no persisted
+ * "founder" column. Anyone who submitted before the hard fork cutoff
+ * qualifies, retroactively, with no migration needed.
+ */
+function is_founding_signatory(string $createdAt): bool {
+    return $createdAt < FOUNDING_SIGNATORY_CUTOFF;
+}
+
 function db_insert_signature(array $sig): int {
     $stmt = db_get()->prepare('
         INSERT INTO signatures (

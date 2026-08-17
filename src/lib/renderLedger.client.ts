@@ -14,6 +14,7 @@ export interface LedgerSignature {
   comment: string | null;
   principlesVersion: string;
   date: string;
+  isFoundingSignatory: boolean;
 }
 
 function escapeHtml(s: string): string {
@@ -36,7 +37,10 @@ export function renderLedgerList(sig: LedgerSignature): string {
   return `
     <li class="ledger-item">
       <div>
-        <div class="ledger-name">${escapeHtml(sig.name)}</div>
+        <div class="ledger-name">
+          ${escapeHtml(sig.name)}
+          ${sig.isFoundingSignatory ? '<span class="founding-badge">Founding Signatory</span>' : ''}
+        </div>
         <div class="ledger-meta">
           v${escapeHtml(sig.principlesVersion)} · ${formatDate(sig.date)}
           ${links.length ? ' · ' + links.join(' · ') : ''}

@@ -662,6 +662,19 @@ main {
   font-weight: 600;
 }
 
+.founding-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid var(--color-success);
+  border-radius: 999px;
+  color: var(--color-success);
+  font-size: 0.7rem;
+  font-weight: 500;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .ledger-meta {
   color: var(--color-text-faint);
   font-size: 0.85rem;
