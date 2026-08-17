@@ -40,6 +40,7 @@ export function renderLedgerList(sig: LedgerSignature): string {
         <div class="ledger-name">
           ${escapeHtml(sig.name)}
           ${sig.isFoundingSignatory ? '<span class="founding-badge">Founding Signatory</span>' : ''}
+          ${sig.participantTypes.map((t) => `<span class="ledger-type">${escapeHtml(t)}</span>`).join('')}
         </div>
         <div class="ledger-meta">
           v${escapeHtml(sig.principlesVersion)} · ${formatDate(sig.date)}
@@ -47,9 +48,6 @@ export function renderLedgerList(sig: LedgerSignature): string {
         </div>
         ${sig.comment ? `<div class="ledger-comment">&ldquo;${escapeHtml(sig.comment)}&rdquo;</div>` : ''}
       </div>
-      <span class="ledger-types">
-        ${sig.participantTypes.map((t) => `<span class="ledger-type">${escapeHtml(t)}</span>`).join('')}
-      </span>
     </li>
   `;
 }
