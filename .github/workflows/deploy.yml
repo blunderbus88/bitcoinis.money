@@ -21,6 +21,8 @@ name: Deploy to SiteGround
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '*/5 * * * *' # safety net in case a push-triggered deploy ever fails silently
   workflow_dispatch: {}
 
 jobs:
