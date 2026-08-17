@@ -8,6 +8,11 @@ require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/validation.php';
 require_once __DIR__ . '/../lib/layout.php';
 
+// SiteGround's front-end proxy caches GET responses by default — never
+// cache an individual moderation edit view (behind Basic Auth, must
+// reflect live DB state).
+header('Cache-Control: no-store, no-cache, must-revalidate');
+
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $sig = $id > 0 ? db_get_signature_by_id($id) : null;
 

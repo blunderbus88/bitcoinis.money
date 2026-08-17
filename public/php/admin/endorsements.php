@@ -7,6 +7,11 @@
 require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/layout.php';
 
+// SiteGround's front-end proxy caches GET responses by default — never
+// cache the moderation queue (must always reflect live DB state, and it's
+// behind Basic Auth, not meant to be shared across requests).
+header('Cache-Control: no-store, no-cache, must-revalidate');
+
 $pending = db_list_pending_signatures();
 $recent = array_slice(db_list_all_signatures_for_admin(), 0, 40);
 

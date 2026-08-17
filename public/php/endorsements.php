@@ -9,6 +9,10 @@
 require_once __DIR__ . '/lib/db.php';
 
 header('Content-Type: application/json');
+// SiteGround's front-end proxy caches GET responses by default, which would
+// serve stale approved-signature lists — confirmed live (X-Proxy-Cache:
+// HIT on this endpoint until this header was added).
+header('Cache-Control: no-store, no-cache, must-revalidate');
 
 $signatures = db_list_approved_signatures();
 $total = db_count_approved_signatures();
