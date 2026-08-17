@@ -44,6 +44,9 @@ jobs:
           TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
         run: npm run build
 
+      - name: Hash inline scripts for CSP
+        run: node scripts/inject-csp-hashes.mjs
+
       - name: Bake server path into admin .htaccess
         run: |
           sed -i "s#{{REPO_ROOT}}#${{ secrets.SITEGROUND_APP_ROOT }}#g" dist/php/admin/.htaccess
