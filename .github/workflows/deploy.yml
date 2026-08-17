@@ -4,9 +4,14 @@ name: Deploy to SiteGround
 # that Astro's compiler (always WebAssembly-based, not just a fallback) fails
 # with a WASM out-of-memory error when `npm run build` runs there directly —
 # confirmed live. So the build happens here in CI instead, and only the
-# finished dist/ output is pushed to the server. config.php and the SQLite
-# database live outside dist/ on the server and are never touched by this
-# workflow.
+# finished dist/ output is pushed to the server.
+#
+# This account's plan doesn't allow changing the primary domain's document
+# root either (no such option in Site Tools), so dist/ deploys straight into
+# public_html/ itself — the fixed doc root — rather than a separate dist/
+# subdirectory. config.php and the SQLite database live one level up, in
+# SITEGROUND_APP_ROOT (public_html's parent), so they're outside the
+# web-servable tree and untouched by every deploy's rsync.
 
 on:
   push:
@@ -34,7 +39,7 @@ jobs:
 
       - name: Bake server path into admin .htaccess
         run: |
-          sed -i "s#{{REPO_ROOT}}#${{ secrets.SITEGROUND_REPO_PATH }}#g" dist/php/admin/.htaccess
+          sed -i "s#{{REPO_ROOT}}#${{ secrets.SITEGROUND_APP_ROOT }}#g" dist/php/admin/.htaccess
 
       - name: Deploy dist/ over SSH
         env:
@@ -42,15 +47,19 @@ jobs:
           HOST: ${{ secrets.SITEGROUND_HOST }}
           PORT: ${{ secrets.SITEGROUND_PORT }}
           USERNAME: ${{ secrets.SITEGROUND_USER }}
-          REPO_PATH: ${{ secrets.SITEGROUND_REPO_PATH }}
+          APP_ROOT: ${{ secrets.SITEGROUND_APP_ROOT }}
         run: |
           install -m 600 /dev/null /tmp/deploy_key
           printf '%s\n' "$SSH_KEY" > /tmp/deploy_key
           mkdir -p ~/.ssh
           ssh-keyscan -p "$PORT" "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
+          # --delete keeps public_html/ an exact mirror of dist/ on every
+          # deploy; excluded paths are SiteGround-managed (SSL cert
+          # challenges, default CGI dir) and must survive redeploys.
           rsync -avz --delete \
+            --exclude=.well-known --exclude=cgi-bin \
             -e "ssh -i /tmp/deploy_key -o IdentitiesOnly=yes -p $PORT" \
-            dist/ "$USERNAME@$HOST:$REPO_PATH/dist/"
+            dist/ "$USERNAME@$HOST:$APP_ROOT/public_html/"
 
           rm -f /tmp/deploy_key
