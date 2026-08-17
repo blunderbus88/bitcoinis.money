@@ -83,7 +83,7 @@ layout_open("Admin — Edit endorsement #{$sig['id']}", 'Edit an endorsement sub
 
       <div class="form-field">
         <label for="comment">Comment</label>
-        <textarea id="comment" name="comment" maxlength="250" rows="3"><?= h($sig['comment'] ?? '') ?></textarea>
+        <textarea id="comment" name="comment" maxlength="500" rows="3"><?= h($sig['comment'] ?? '') ?></textarea>
       </div>
 
       <div>

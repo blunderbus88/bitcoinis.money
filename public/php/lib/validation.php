@@ -97,7 +97,7 @@ function validate_nostr($input): ?string {
     return $value;
 }
 
-function validate_comment($input, int $maxLength = 250): ?string {
+function validate_comment($input, int $maxLength = 500): ?string {
     if ($input === null || $input === '') return null;
     if (!is_string($input)) return null;
     $value = validation_clean($input);
