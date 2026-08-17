@@ -1,8 +1,7 @@
 # Real Apache Basic Auth — blocks unauthenticated requests before any PHP
 # in this directory ever runs (the same "gate before the handler" guarantee
-# src/middleware.ts used to provide). Covers /admin/endorsements,
-# /admin/endorsements/{id}, and /api/admin/* (all rewritten into this
-# directory by ../../.htaccess).
+# src/middleware.ts used to provide). Covers /admin, /admin/{id}, and
+# /api/admin/* (all rewritten into this directory by ../../.htaccess).
 #
 # {{REPO_ROOT}} is substituted with the real absolute path by the "Bake
 # server path" step in .github/workflows/deploy.yml on every deploy —

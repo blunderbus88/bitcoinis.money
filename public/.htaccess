@@ -13,8 +13,8 @@ RewriteRule ^api/admin/moderate/?$ php/admin/moderate.php [L]
 RewriteRule ^api/admin/edit/?$ php/admin/edit-submit.php [L]
 RewriteRule ^api/admin/delete/?$ php/admin/delete.php [L]
 RewriteRule ^api/endorsements/?$ php/endorsements.php [L]
-RewriteRule ^admin/endorsements/([0-9]+)/?$ php/admin/edit.php?id=$1 [L,QSA]
-RewriteRule ^admin/endorsements/?$ php/admin/endorsements.php [L]
+RewriteRule ^admin/([0-9]+)/?$ php/admin/edit.php?id=$1 [L,QSA]
+RewriteRule ^admin/?$ php/admin/endorsements.php [L]
 
 # Same security headers src/middleware.ts used to set on every response.
 # Applies to static files and PHP responses alike (mod_headers operates on

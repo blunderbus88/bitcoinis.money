@@ -1,6 +1,6 @@
 <?php
-// Ports src/pages/admin/endorsements.astro. Reached at /admin/endorsements
-// via the rewrite in public/.htaccess. Protected by Apache Basic Auth
+// Ports src/pages/admin/endorsements.astro. Reached at /admin via the
+// rewrite in public/.htaccess. Protected by Apache Basic Auth
 // (public/php/admin/.htaccess) — this file assumes it only runs for an
 // already-authenticated request.
 
@@ -48,7 +48,7 @@ layout_open('Admin — Endorsements', 'Endorsement moderation queue.');
             <?php endif; ?>
           </div>
           <div class="admin-actions">
-            <a href="/admin/endorsements/<?= (int) $sig['id'] ?>" class="btn btn-secondary">Edit</a>
+            <a href="/admin/<?= (int) $sig['id'] ?>" class="btn btn-secondary">Edit</a>
             <form method="POST" action="/api/admin/moderate">
               <input type="hidden" name="id" value="<?= (int) $sig['id'] ?>" />
               <input type="hidden" name="status" value="approved" />
@@ -84,7 +84,7 @@ layout_open('Admin — Endorsements', 'Endorsement moderation queue.');
                 <span class="ledger-type"><?= h($t) ?></span>
               <?php endforeach; ?>
             </span>
-            <a href="/admin/endorsements/<?= (int) $sig['id'] ?>" class="btn btn-secondary">Edit</a>
+            <a href="/admin/<?= (int) $sig['id'] ?>" class="btn btn-secondary">Edit</a>
           </div>
         </li>
       <?php endforeach; ?>

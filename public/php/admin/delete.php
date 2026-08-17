@@ -25,4 +25,4 @@ if ($id <= 0) {
 
 db_delete_signature($id);
 
-header('Location: /admin/endorsements', true, 303);
+header('Location: /admin', true, 303);

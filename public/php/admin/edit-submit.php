@@ -28,7 +28,7 @@ $name = validate_name($_POST['name'] ?? null);
 $participantTypes = validate_participant_types($_POST['participant_type'] ?? []);
 
 if (!$name || !$participantTypes) {
-    header('Location: /admin/endorsements/' . $id . '?error=validation', true, 303);
+    header('Location: /admin/' . $id . '?error=validation', true, 303);
     exit;
 }
 
@@ -42,4 +42,4 @@ db_update_signature_fields($id, [
     'comment' => validate_comment($_POST['comment'] ?? null),
 ]);
 
-header('Location: /admin/endorsements/' . $id . '?updated=1', true, 303);
+header('Location: /admin/' . $id . '?updated=1', true, 303);

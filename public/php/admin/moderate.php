@@ -27,4 +27,4 @@ if ($id <= 0 || !$isValidStatus) {
 
 db_moderate_signature($id, $status);
 
-header('Location: /admin/endorsements', true, 303);
+header('Location: /admin', true, 303);

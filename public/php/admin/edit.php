@@ -1,8 +1,7 @@
 <?php
-// Ports src/pages/admin/endorsements/[id].astro. Reached at
-// /admin/endorsements/{id} via the rewrite in public/.htaccess (which maps
-// it to this file with ?id=). Protected by Apache Basic Auth
-// (public/php/admin/.htaccess).
+// Ports src/pages/admin/endorsements/[id].astro. Reached at /admin/{id}
+// via the rewrite in public/.htaccess (which maps it to this file with
+// ?id=). Protected by Apache Basic Auth (public/php/admin/.htaccess).
 
 require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/validation.php';
@@ -17,7 +16,7 @@ $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $sig = $id > 0 ? db_get_signature_by_id($id) : null;
 
 if (!$sig) {
-    header('Location: /admin/endorsements', true, 303);
+    header('Location: /admin', true, 303);
     exit;
 }
 
@@ -28,7 +27,7 @@ $hasError = ($_GET['error'] ?? '') === 'validation';
 layout_open("Admin — Edit endorsement #{$sig['id']}", 'Edit an endorsement submission.');
 ?>
   <div class="reading-column">
-    <p><a href="/admin/endorsements">&larr; Back to moderation queue</a></p>
+    <p><a href="/admin">&larr; Back to moderation queue</a></p>
     <h1>Edit endorsement #<?= (int) $sig['id'] ?></h1>
     <p class="ledger-meta">
       <?= h($sig['status']) ?> · v<?= h($sig['principles_version']) ?> · submitted <?= h($sig['created_at']) ?>

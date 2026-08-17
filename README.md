@@ -186,7 +186,7 @@ by a salted IP hash (`public/php/lib/rateLimit.php`), optionally checked
 against Cloudflare Turnstile, and inserted with `status = 'pending'`. They
 are **never** publicly visible until approved.
 
-`/admin/endorsements` (real Apache Basic Auth — see
+`/admin` (real Apache Basic Auth — see
 `public/php/admin/.htaccess` and the deploy runbook) lists the pending
 queue with Approve/Reject buttons that post to `/api/admin/moderate`.
 Approved signatures appear on `/endorsements`.

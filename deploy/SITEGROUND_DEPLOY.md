@@ -153,17 +153,17 @@ the server directly (works over both HTTP and HTTPS via SNI):
 SERVER_IP=$(dig +short <ssh-hostname> | head -1)
 curl -skI -H "Host: bitcoinis.money" "https://$SERVER_IP/"
 curl -sk -o /dev/null -w '%{http_code}\n' -H "Host: bitcoinis.money" \
-  "https://$SERVER_IP/admin/endorsements"   # expect 401 with no credentials
+  "https://$SERVER_IP/admin"   # expect 401 with no credentials
 ```
 
 Once DNS points here, the same checks work directly:
 
 ```bash
 curl -I https://bitcoinis.money/
-curl -I https://bitcoinis.money/admin/endorsements   # expect 401 with no credentials
+curl -I https://bitcoinis.money/admin   # expect 401 with no credentials
 ```
 
 Then in a browser: load `/principles` and `/whitepaper`, submit a test
-signature via `/endorse`, confirm it lands in `/admin/endorsements` (HTTP
+signature via `/endorse`, confirm it lands in `/admin` (HTTP
 Basic Auth, credentials from step 5) as pending, approve it, confirm it
 appears on `/endorsements`.
