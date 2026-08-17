@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   sync:
@@ -59,3 +60,14 @@ jobs:
           git add content/principles-meta.json content/principles-archive/
           git commit -m "release: auto-publish Principles.md update from blunderbus88/Bitcoin@main"
           git push
+
+      # A push made with the default GITHUB_TOKEN doesn't trigger other
+      # workflows' `on: push` (GitHub's anti-recursion safeguard), so
+      # deploy.yml would otherwise sit idle until its next scheduled tick —
+      # which can lag well behind its nominal 5-minute interval. Dispatch it
+      # directly instead of waiting on that.
+      - name: Trigger deploy
+        if: steps.release.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY"
