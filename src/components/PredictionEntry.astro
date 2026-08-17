@@ -1,16 +1,11 @@
 ---
 import type { Prediction } from '../lib/predictions';
-import XIcon from './XIcon.astro';
-import { tweetIntent } from '../lib/share';
 
 interface Props {
   prediction: Prediction;
-  pageUrl: string;
 }
 
-const { prediction, pageUrl } = Astro.props;
-
-const anchorUrl = `${pageUrl}#${prediction.slug}`;
+const { prediction } = Astro.props;
 
 // publishedAt is a bare YYYY-MM-DD (no time component); format it in UTC so
 // the displayed date can't shift a day depending on the server's local
@@ -21,9 +16,6 @@ const dateLabel = new Date(prediction.publishedAt).toLocaleDateString('en-US', {
   day: 'numeric',
   timeZone: 'UTC',
 });
-
-const tweetText = `Prediction ${prediction.number} — ${prediction.title}`;
-const tweetUrl = tweetIntent(tweetText, anchorUrl);
 ---
 
 <section class="prediction" id={prediction.slug}>
@@ -38,11 +30,6 @@ const tweetUrl = tweetIntent(tweetText, anchorUrl);
 
   <div class="prediction-footer">
     <span class="prediction-date">Published {dateLabel}</span>
-    <span class="prediction-actions">
-      <a class="x-share-btn" href={tweetUrl} rel="noopener" target="_blank">
-        <XIcon class="x-icon" /><span>Share on X</span>
-      </a>
-    </span>
   </div>
 
   {
@@ -112,12 +99,6 @@ const tweetUrl = tweetIntent(tweetText, anchorUrl);
     margin-top: 1.5rem;
     font-size: 0.82rem;
     color: var(--color-text-faint);
-  }
-
-  .prediction-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
   }
 
   .prediction-updates {

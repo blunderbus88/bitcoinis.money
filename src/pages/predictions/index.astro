@@ -44,7 +44,7 @@ const shareTextFull = [
   <article class="reading-column predictions-body">
     <div set:html={doc.introHtml} />
 
-    {doc.predictions.map((p) => <PredictionEntry prediction={p} pageUrl={canonicalUrl} />)}
+    {doc.predictions.map((p) => <PredictionEntry prediction={p} />)}
   </article>
 </BaseLayout>
 
