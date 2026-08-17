@@ -25,6 +25,13 @@ if (!csrf_origin_ok()) {
     exit('Forbidden');
 }
 
+// Honeypot: real users never see or fill this field (see .hp-field in
+// src/pages/endorse.astro). Redirect as if it succeeded so bots don't learn
+// they were caught and adjust.
+if (!empty($_POST['website'])) {
+    redirect_to('/endorse', ['submitted' => '1']);
+}
+
 $ip = rate_limit_client_ip();
 $ipHash = rate_limit_hash_ip($ip);
 

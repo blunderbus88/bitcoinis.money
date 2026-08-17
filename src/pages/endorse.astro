@@ -36,6 +36,11 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
         <input type="hidden" name="principles_version" value={doc.version} />
         <input type="hidden" name="principles_hash" value={doc.hash} />
 
+        <div class="hp-field" aria-hidden="true">
+          <label for="website">Website</label>
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+
         <div class="form-field">
           <label for="name">Name or pseudonym</label>
           <input type="text" id="name" name="name" maxlength="100" required />
@@ -169,3 +174,16 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
   </script>
 
 </BaseLayout>
+
+<style>
+  /* Honeypot: invisible to real users (off-screen, not display:none — some
+     bots skip display:none fields but still fill positioned ones), so any
+     submission with this filled in is treated as spam in /api/endorse. */
+  .hp-field {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>

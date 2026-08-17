@@ -18,10 +18,16 @@ function rate_limit_hash_ip(string $ip): string {
 }
 
 function rate_limit_client_ip(): string {
-    // Behind a reverse proxy, X-Forwarded-For's first entry is the original client.
+    // There's exactly one trusted hop in front of PHP here (SiteGround's own
+    // proxy/cache layer). Nginx-style proxies *append* the connecting IP to
+    // any X-Forwarded-For the client already sent rather than replacing it,
+    // so the last entry is the one our trusted proxy observed — the first
+    // entry is attacker-controlled and trivially spoofable, which would
+    // otherwise let a spammer mint a fresh rate-limit bucket on every request.
     $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null;
     if ($forwarded) {
-        return trim(explode(',', $forwarded)[0]);
+        $parts = explode(',', $forwarded);
+        return trim(end($parts));
     }
     return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 }
