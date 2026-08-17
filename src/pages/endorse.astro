@@ -86,14 +86,6 @@ const siteKey = turnstileSiteKey();
           <input type="text" id="nostr" name="nostr" placeholder="npub1…" maxlength="120" />
         </div>
 
-        <div class="form-field">
-          <label for="comment">
-            Which Principle matters most to you and why? <span class="hint">(optional)</span>
-          </label>
-          <textarea id="comment" name="comment" maxlength="280" rows="3"></textarea>
-          <span class="char-count" data-char-count-for="comment">280 characters remaining</span>
-        </div>
-
         {siteKey && (
           <div class="form-field">
             <div class="cf-turnstile" data-sitekey={siteKey}></div>
@@ -138,16 +130,4 @@ const siteKey = turnstileSiteKey();
     }
   </script>
 
-  <script>
-    document.querySelectorAll<HTMLTextAreaElement>('textarea[maxlength]').forEach((field) => {
-      const counter = document.querySelector(`[data-char-count-for="${field.id}"]`);
-      if (!counter) return;
-      const max = Number(field.getAttribute('maxlength'));
-      const update = () => {
-        counter.textContent = `${max - field.value.length} characters remaining`;
-      };
-      field.addEventListener('input', update);
-      update();
-    });
-  </script>
 </BaseLayout>
