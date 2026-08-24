@@ -35,6 +35,6 @@ const canonical = new URL(Astro.url.pathname, siteUrl).toString();
     <main>
       <slot />
     </main>
-    <Footer />
+    <Footer hideSupport={current === 'endorse'} />
   </body>
 </html>

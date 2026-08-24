@@ -1,3 +1,11 @@
+---
+interface Props {
+  hideSupport?: boolean;
+}
+
+const { hideSupport = false } = Astro.props;
+---
+
 <footer class="site-footer">
   <div class="footer-inner">
     <p>BitcoinIs.Money</p>
@@ -7,4 +15,9 @@
       <li><a href="/whitepaper">White Paper</a></li>
     </ul>
   </div>
+  {!hideSupport && (
+    <div class="footer-support">
+      <a class="btn btn-support" href="/support">Support</a>
+    </div>
+  )}
 </footer>
