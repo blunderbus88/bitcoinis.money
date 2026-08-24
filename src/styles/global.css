@@ -633,9 +633,9 @@ main {
 }
 
 .submitted-dialog {
-  max-width: 26rem;
+  max-width: 32rem;
   width: calc(100% - 2rem);
-  padding: 1.5rem;
+  padding: 1.75rem 2rem;
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius);
   background: var(--color-bg-subtle);
@@ -647,7 +647,8 @@ main {
 }
 
 .submitted-dialog p {
-  margin: 0 0 1.25rem;
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
 }
 
 .submitted-dialog .btn-row {

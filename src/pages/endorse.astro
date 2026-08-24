@@ -16,6 +16,14 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
   description="Add your voluntary personal endorsement of the current version of Our Bitcoin Principles."
   current="endorse"
 >
+  <div class="page-shell">
+    <p class="doc-relationship">
+      <strong>Endorsements</strong> — still being refined, with the final version locking in September 1. Want to
+      help shape the language or support outreach? Join us on{' '}
+      <a href="https://discord.gg/ESN4tuGRs" target="_blank" rel="noopener">Discord</a>.
+    </p>
+  </div>
+
   <div class="reading-column">
     <h1>Endorse the Principles</h1>
 
@@ -32,7 +40,7 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
     <p class="form-error" id="flash-error" hidden></p>
 
     {doc && (
-      <form method="POST" action="/api/endorse" class="form-grid">
+      <form id="endorse-form" method="POST" action="/api/endorse" class="form-grid">
         <input type="hidden" name="principles_version" value={doc.version} />
         <input type="hidden" name="principles_hash" value={doc.hash} />
 
@@ -111,6 +119,11 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
 
     <dialog id="submitted-dialog" class="submitted-dialog">
       <p>Thank you for submitting. Your signature will appear on the page shortly.</p>
+      <p class="doc-relationship" id="submitted-dialog-note" hidden>
+        <strong>Endorsements</strong> — still being refined, with the final version locking in September 1. Want to
+        help shape the language or support outreach? Join us on{' '}
+        <a href="https://discord.gg/ESN4tuGRs" target="_blank" rel="noopener">Discord</a>.
+      </p>
       <div class="btn-row">
         <a class="x-share-btn" href={tweetUrl} rel="noopener" target="_blank">
           <XIcon class="x-icon" /><span>Share on X</span>
@@ -135,10 +148,28 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
       unknown: 'Something went wrong submitting your endorsement. Please try again.',
     };
 
+    // The extra-fields flag has to survive the form's full-page POST + 303
+    // redirect back here, so it's stashed in sessionStorage on submit and
+    // read back below rather than passed through the redirect's query string.
+    const EXTRA_FIELDS_KEY = 'endorse-had-extra-fields';
+
+    document.getElementById('endorse-form')?.addEventListener('submit', () => {
+      const github = (document.getElementById('github') as HTMLInputElement | null)?.value.trim();
+      const xProfile = (document.getElementById('x_profile') as HTMLInputElement | null)?.value.trim();
+      const nostr = (document.getElementById('nostr') as HTMLInputElement | null)?.value.trim();
+      const comment = (document.getElementById('comment') as HTMLTextAreaElement | null)?.value.trim();
+      const hadExtra = Boolean(github || xProfile || nostr || comment);
+      sessionStorage.setItem(EXTRA_FIELDS_KEY, hadExtra ? '1' : '0');
+    });
+
     const params = new URLSearchParams(location.search);
 
     if (params.get('submitted') === '1') {
       const dialog = document.getElementById('submitted-dialog') as HTMLDialogElement | null;
+      if (sessionStorage.getItem(EXTRA_FIELDS_KEY) === '1') {
+        document.getElementById('submitted-dialog-note')?.removeAttribute('hidden');
+      }
+      sessionStorage.removeItem(EXTRA_FIELDS_KEY);
       dialog?.showModal();
     }
 
@@ -149,6 +180,15 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
         el.textContent = ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.unknown;
         el.removeAttribute('hidden');
       }
+    }
+
+    // Drop submitted/error from the URL once handled, so refreshing the
+    // page doesn't keep re-showing the dialog or error message.
+    if (params.has('submitted') || params.has('error')) {
+      params.delete('submitted');
+      params.delete('error');
+      const query = params.toString();
+      history.replaceState(null, '', location.pathname + (query ? `?${query}` : ''));
     }
   </script>
 
@@ -176,6 +216,18 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
 </BaseLayout>
 
 <style>
+  .doc-relationship {
+    max-width: var(--measure);
+    margin: 2rem auto 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .doc-relationship a {
+    color: var(--color-text-muted);
+    text-decoration-color: var(--color-border-strong);
+  }
+
   /* Honeypot: invisible to real users (off-screen, not display:none — some
      bots skip display:none fields but still fill positioned ones), so any
      submission with this filled in is treated as spam in /api/endorse. */
