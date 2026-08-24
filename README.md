@@ -78,8 +78,10 @@ once and serve the combined output with PHP's built-in server:
 
 ```bash
 npm run build
-php -S localhost:8787 -t dist
+php -S localhost:8787 -t dist scripts/dev-router.php
 ```
+
+(`dev-router.php` mirrors `public/.htaccess`'s rewrite rules — e.g. `/api/endorse` → `php/endorse.php` — which the built-in server doesn't apply on its own.)
 
 If `content/principles-meta.json` has no `current` version yet (e.g. a fresh
 fork with no release history), create a `Principles.md` at the repo root
