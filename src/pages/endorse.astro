@@ -228,6 +228,14 @@ const tweetUrl = tweetIntent('I endorsed the Bitcoin Principles at bitcoinis.mon
     text-decoration-color: var(--color-border-strong);
   }
 
+  /* Inside the confirmation dialog, .doc-relationship's higher-specificity
+     margin (2rem auto 0) otherwise wins over .submitted-dialog p's, zeroing
+     the bottom margin and jamming the note against the button row below. */
+  .submitted-dialog .doc-relationship {
+    max-width: none;
+    margin: 0 0 1.5rem;
+  }
+
   /* Honeypot: invisible to real users (off-screen, not display:none — some
      bots skip display:none fields but still fill positioned ones), so any
      submission with this filled in is treated as spam in /api/endorse. */
